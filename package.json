@@ -7,7 +7,7 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "build": "babel src --stage 0 -d dist",
         "watch": "babel src --stage 0 -w -d dist",
-        "packages": "cp src/**/*.json dist/**/*.json"
+        "packages": "cp src/cache/package.json dist/cache/package.json; cp src/fetcher/package.json dist/fetcher/package.json;"
     },
     "author": "Matt Keas (@matthiasak)",
     "license": "MIT",

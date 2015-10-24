@@ -18,5 +18,13 @@ var _resource = require('./resource');
 
 var _resource2 = _interopRequireDefault(_resource);
 
-exports['default'] = { cache: cache, fetch: _fetch2['default'], store: _store2['default'], resource: _resource2['default'] };
+var _cache = require('./cache');
+
+var _cache2 = _interopRequireDefault(_cache);
+
+var _fetcher = require('./fetcher');
+
+var _fetcher2 = _interopRequireDefault(_fetcher);
+
+exports['default'] = { cache: _cache2['default'], fetch: _fetch2['default'], store: _store2['default'], resource: _resource2['default'], fetcher: _fetcher2['default'] };
 module.exports = exports['default'];

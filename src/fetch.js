@@ -1,4 +1,5 @@
-import f from `./fetcher`)
+
+import _fetch from './fetcher'
 
 /**
  * batches in-flight requests into the same request object
@@ -30,6 +31,6 @@ const fetch = (f => {
                     return data
                 }).catch(e => console.error(e, url)))
     }
-})(f)
+})(_fetch)
 
 export default fetch
