@@ -1,0 +1,26 @@
+{
+  "name": "universal-utils",
+  "version": "1.0.0",
+  "description": "functional, event, storage, cache, and other utilities",
+  "browser": {
+    "./cache/index.js": "./cache/browser.js",
+    "./fetcher/index.js": "./fetch/browser.js"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel ./index.js --stage 0 -o ./dist/index.js",
+    "watch": "babel ./index.js --stage 0 -w -o ./dist/index.js"
+  },
+  "author": "Matt Keas (@matthiasak)",
+  "license": "MIT",
+  "dependencies": {
+    "localforage": "^1.3.0",
+    "node-fetch": "^1.3.3",
+    "whatwg-fetch": "^0.10.0"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "regenerator-runtime": "0.0.1"
+  }
+}
