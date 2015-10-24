@@ -1,4 +1,4 @@
-import _fetch from './fetcher'
+const _fetch = require(`./fetcher${global.document ? '/browser.js' : ''}`)
 
 /**
  * batches in-flight requests into the same request object

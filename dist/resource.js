@@ -1,0 +1,86 @@
+'use strict';
+
+Object.defineProperty(exports, '__esModule', {
+    value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var _store2 = require('./store');
+
+var _store3 = _interopRequireDefault(_store2);
+
+var _fetch = require('./fetch');
+
+var _fetch2 = _interopRequireDefault(_fetch);
+
+var cache = require('./cache' + (global.document ? '/browser.js' : ''));
+
+var resource = function resource() {
+    var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+    var defaultState = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+    var inflight = {};
+
+    var _store = (0, _store3['default'])(defaultState);
+    var get = config.get;
+    var getURL = config.getURL;
+    var parse = config.parse;
+    var nocache = config.nocache;
+    var name = config.name;
+    var cacheDuration = config.cacheDuration;
+
+    var _get = function _get(id) {
+        for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            params[_key - 1] = arguments[_key];
+        }
+
+        var _id = id;
+
+        if (_id instanceof Object) _id = Object.keys(_id).sort().map(function (k) {
+            return k + ':' + _id[k];
+        }).join(',');
+        // get an inflight Promise the resolves to the data, keyed by `id`,
+        // or create a new one
+        return inflight[_id] || (inflight[_id] = new Promise(function (res, rej) {
+            return cache.getItem(name + ':' + id).then(function (d) {
+                return res(d);
+            })['catch'](function (error) {
+                return (get instanceof Function ? get.apply(undefined, [id].concat(params)) : (0, _fetch2['default'])(getURL.apply(undefined, [id].concat(params)))).then(function (d) {
+                    return !global.document && parse ? parse(d) : d;
+                }).then(function (d) {
+                    if (!d) throw 'no data returned from ' + name + ':' + _id;
+                    return d;
+                }).then(function (d) {
+                    return _store.dispatch(function (state, next) {
+                        var _state = _extends({}, state, _defineProperty({}, _id, d)); // make new state
+                        inflight = _extends({}, inflight, _defineProperty({}, _id, undefined)); // clear in-flight promise
+                        !nocache && cache.setItem(name + ':' + _id, d, cacheDuration);
+                        next(_state); // store's new state is _state
+                    }).then(function (state) {
+                        return state[_id];
+                    });
+                }) // pipe state[id] to get()
+                .then(function (d) {
+                    return res(d);
+                }) // resolve the get(id)
+                ['catch'](function (e) {
+                    inflight = _extends({}, inflight, _defineProperty({}, _id, undefined)); // in case of fire...
+                    rej(e);
+                });
+            });
+        }));
+    };
+
+    return _extends({}, config, {
+        store: _store,
+        get: _get
+    });
+};
+
+exports['default'] = resource;
+module.exports = exports['default'];

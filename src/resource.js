@@ -1,13 +1,13 @@
 import store from './store'
 import fetch from './fetch'
-import cache from './cache'
+const cache = require(`./cache${global.document ? '/browser.js' : ''}`)
 
 const resource = (config={}, defaultState={}) => {
 
     let inflight = {}
 
     const _store = store(defaultState),
-        {get, getURL, parse, nocache, name} = config
+        {get, getURL, parse, nocache, name, cacheDuration} = config
 
     const _get = (id, ...params) => {
         let _id = id
@@ -33,7 +33,7 @@ const resource = (config={}, defaultState={}) => {
                         _store.dispatch((state, next) => {
                             let _state = {...state, [_id]: d} // make new state
                             inflight = {...inflight, [_id]: undefined} // clear in-flight promise
-                            !nocache && cache.setItem(`${name}:${_id}`, d)
+                            !nocache && cache.setItem(`${name}:${_id}`, d, cacheDuration)
                             next(_state) // store's new state is _state
                         })
                     .then(state => state[_id])) // pipe state[id] to get()
