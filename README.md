@@ -5,7 +5,7 @@
 [![NPM](https://nodei.co/npm/universal-utils.png)](https://nodei.co/npm/universal-utils/)
 ![](https://david-dm.org/matthiasak/universal-utils.svg)
 
-This is a small project that includes some interesting provblem-solving and state-management approaches:
+Small functional problem-solving, event, state-management, and caching utilities:
 
 - a universal XMLHTTPRequest `fetch()` that returns ES6 Promises
 - a universal caching mechanism that can cache to WebSQL, IndexedDB, or Local Storage in the browser, or to memory and redis in node
