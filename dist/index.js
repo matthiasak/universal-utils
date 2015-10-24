@@ -18,6 +18,5 @@ var _resource = require('./resource');
 
 var _resource2 = _interopRequireDefault(_resource);
 
-var cache = require('./cache' + (global.document ? '/browser.js' : ''));
 exports['default'] = { cache: cache, fetch: _fetch2['default'], store: _store2['default'], resource: _resource2['default'] };
 module.exports = exports['default'];

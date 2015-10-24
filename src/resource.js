@@ -1,6 +1,6 @@
 import store from './store'
+import cache from './cache'
 import fetch from './fetch'
-const cache = require(`./cache${global.document ? '/browser.js' : ''}`)
 
 const resource = (config={}, defaultState={}) => {
 

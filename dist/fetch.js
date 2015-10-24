@@ -1,3 +1,6 @@
+/**
+ * batches in-flight requests into the same request object
+ */
 'use strict';
 
 Object.defineProperty(exports, '__esModule', {
@@ -8,12 +11,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var _fetch = require('./fetcher' + (global.document ? '/browser.js' : ''));
-
-/**
- * batches in-flight requests into the same request object
- */
-var fetch = (function (f) {
+var fetch = function fetch(f) {
     var cache = {};
     return function (url) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -40,7 +38,7 @@ var fetch = (function (f) {
             return console.error(e, url);
         }));
     };
-})(_fetch);
+};
 
 exports['default'] = fetch;
 module.exports = exports['default'];

@@ -1,4 +1,4 @@
-const _fetch = require(`./fetcher${global.document ? '/browser.js' : ''}`)
+import f from `./fetcher`)
 
 /**
  * batches in-flight requests into the same request object
@@ -30,6 +30,6 @@ const fetch = (f => {
                     return data
                 }).catch(e => console.error(e, url)))
     }
-})(_fetch)
+})(f)
 
 export default fetch
