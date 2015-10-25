@@ -5,10 +5,10 @@ const storage = require('localforage')
 
 const cache = () => {
 
-    const getItem = (key) => {
+    const getItem = (key, expire=false) => {
         return storage.getItem(key).then(d => {
             if(!d) throw `${key} not in cache`
-            let expired = (+new Date) > d.expiresAt
+            let expired = expire || (+new Date) > d.expiresAt
             if(expired) throw `${key} is expired`
             return d.data
         })

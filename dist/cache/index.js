@@ -20,18 +20,24 @@ var nodeCache = function nodeCache() {
                 });
             });
 
-            var getItem = function getItem(key) {
+            var getItem = function getItem(key, expire) {
                 return new Promise(function (res, rej) {
                     client.get(key, function (err, data) {
                         if (err || !data) rej(key + ' not in cache');
+                        data = JSON.parse(data);
+                        var expired = expire || +new Date() > data.expiresAt;
+                        if (expired) rej(key + ' is expired');
                         res(data);
                     });
                 });
             };
 
             var setItem = function setItem(key, val) {
+                var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
+
+                var expiresAt = +new Date() + timeout;
                 return new Promise(function (res, rej) {
-                    client.set(key, JSON.stringify(val), function () {
+                    client.set(key, JSON.stringify({ expiresAt: expiresAt, data: val }), function () {
                         res(val);
                     });
                 });
@@ -48,17 +54,26 @@ var nodeCache = function nodeCache() {
 
             var cache = {};
 
-            var getItem = function getItem(key) {
+            var getItem = function getItem(key, expire) {
                 return new Promise(function (res, rej) {
-                    if (key in cache) return res(clone(cache[key]));
+                    if (key in cache) {
+                        var data = clone(cache[key]),
+                            expired = expire || data.expiresAt;
+                        if (expired) return rej(key + ' is expired');
+                        return res(data.data);
+                    }
                     rej(key + ' not in cache');
                 });
             };
 
             var setItem = function setItem(key, val) {
+                var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
+
+                var expiresAt = +new Date() + timeout;
+                var data = { expiresAt: expiresAt, data: val };
                 return new Promise(function (res, rej) {
-                    cache[key] = clone(val);
-                    res(clone(val));
+                    cache[key] = clone(data);
+                    res(clone(data).data);
                 });
             };
 

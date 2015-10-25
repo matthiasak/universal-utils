@@ -12,9 +12,11 @@ var storage = require('localforage');
 var cache = function cache() {
 
     var getItem = function getItem(key) {
+        var expire = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
         return storage.getItem(key).then(function (d) {
             if (!d) throw key + ' not in cache';
-            var expired = +new Date() > d.expiresAt;
+            var expired = expire || +new Date() > d.expiresAt;
             if (expired) throw key + ' is expired';
             return d.data;
         });
