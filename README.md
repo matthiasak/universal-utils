@@ -12,6 +12,7 @@ Small functional problem-solving, event, state-management, and caching utilities
 - a universal `fetch()` wrapper that can batch in-flight requests to the same URL, meaning simultaneous requests to the same URL will be resolved by a single network request
 - a universal `store()` that maintains immutable pure JSON state (**NOTE: can only have Objects and Arrays, no custom constructors stored in it**) and implements an asynchronous flux/redux pattern that can chain reducer functions together to represent state
 - a universal `resource()` that fetches, batches, caches, and maintains an internal store of data associated with a particular resource / model / or API endpoint
+- a small browser-side `router()` that handles `hashchange` events and maps them to callbacks
 
 #### How to get started
 
@@ -54,6 +55,8 @@ The `store()` module is a mechanism to store an immutable object that represents
     ```
 
 The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`), exposing one primary method `get()`. I'll add more details to this module and how to use it at a later time.
+
+The `router()` module is a simple client-side `hashchange` event router that allows Single Page Apps to effectively map and listen to route changes. For `router()` implementation examples, see the `router.js` file.
 
 #### License
 

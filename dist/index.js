@@ -26,5 +26,9 @@ var _fetcher = require('./fetcher');
 
 var _fetcher2 = _interopRequireDefault(_fetcher);
 
-exports['default'] = { cache: _cache2['default'], fetch: _fetch2['default'], store: _store2['default'], resource: _resource2['default'], fetcher: _fetcher2['default'] };
+var _router = require('./router');
+
+var _router2 = _interopRequireDefault(_router);
+
+exports['default'] = { cache: _cache2['default'], fetch: _fetch2['default'], store: _store2['default'], resource: _resource2['default'], fetcher: _fetcher2['default'], router: _router2['default'] };
 module.exports = exports['default'];
