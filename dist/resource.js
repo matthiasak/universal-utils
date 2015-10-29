@@ -45,7 +45,7 @@ var resource = function resource() {
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
         return inflight[_id] || (inflight[_id] = new Promise(function (res, rej) {
-            return _cache2['default'].getItem(name + ':' + id).then(function (d) {
+            return (nocache ? Promise.reject() : _cache2['default'].getItem(name + ':' + id)).then(function (d) {
                 return res(d);
             })['catch'](function (error) {
                 return (get instanceof Function ? get.apply(undefined, [id].concat(params)) : fetch(getURL.apply(undefined, [id].concat(params)))).then(function (d) {

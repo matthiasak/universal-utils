@@ -7,7 +7,7 @@ const cache = () => {
 
     const getItem = (key, expire=false) => {
         return storage.getItem(key).then(d => {
-            if(!d) throw `${key} not in cache`
+            if(!d.data) throw `${key} not in cache`
             let expired = expire || (+new Date) > d.expiresAt
             if(expired) throw `${key} is expired`
             return d.data

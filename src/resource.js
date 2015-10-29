@@ -17,7 +17,9 @@ const resource = (config={}, defaultState={}) => {
         // or create a new one
         return inflight[_id] ||
             (inflight[_id] = new Promise((res,rej) =>
-                cache.getItem(`${name}:${id}`)
+                (nocache ?
+                    Promise.reject() :
+                    cache.getItem(`${name}:${id}`))
                 .then(d => res(d))
                 .catch(error =>
                     (get instanceof Function ?
