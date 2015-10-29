@@ -1,4 +1,5 @@
-import fetch from './fetch'
+require('isomorphic-fetch')
+
 import store from './store'
 import resource from './resource'
 import cache from './cache'

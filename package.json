@@ -7,11 +7,13 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --stage 0 -d dist",
     "watch": "babel src --stage 0 -w -d dist",
-    "packages": "cp src/cache/package.json dist/cache/package.json; cp src/fetcher/package.json dist/fetcher/package.json;"
+    "packages": "cp src/cache/package.json dist/cache/package.json;"
   },
   "author": "Matt Keas (@matthiasak)",
   "license": "MIT",
   "dependencies": {
+    "i": "^0.3.3",
+    "isomorphic-fetch": "^2.2.0",
     "localforage": "^1.3.0",
     "node-fetch": "^1.3.3",
     "redis": "^2.2.5",

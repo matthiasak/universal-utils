@@ -1,10 +1,9 @@
-
-import _fetch from './fetcher'
+import * as utils from './utils'
 
 /**
  * batches in-flight requests into the same request object
  */
-const fetch = (f => {
+const _fetch = f => {
     let cache = {}
     return (url, options={}) => {
         let {method} = options
@@ -31,6 +30,8 @@ const fetch = (f => {
                     return data
                 }).catch(e => console.error(e, url)))
     }
-})(_fetch)
+}
 
-export default fetch
+const _f = _fetch(fetch)
+
+export default _f
