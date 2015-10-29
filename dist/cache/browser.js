@@ -15,7 +15,7 @@ var cache = function cache() {
         var expire = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
         return storage.getItem(key).then(function (d) {
-            if (!d.data) throw key + ' not in cache';
+            if (!(d && d.data)) throw key + ' not in cache';
             var expired = expire || +new Date() > d.expiresAt;
             if (expired) throw key + ' is expired';
             return d.data;
@@ -25,6 +25,7 @@ var cache = function cache() {
     var setItem = function setItem(key, val) {
         var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
 
+        if (!val) return Promise.reject('val was null/undefined');
         var expiresAt = +new Date() + timeout;
         return storage.setItem(key, { expiresAt: expiresAt, data: val });
     };

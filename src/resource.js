@@ -1,5 +1,6 @@
 import store from './store'
 import cache from './cache'
+import fetch from './fetch'
 
 const resource = (config={}, defaultState={}) => {
 

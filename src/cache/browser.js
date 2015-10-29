@@ -7,7 +7,7 @@ const cache = () => {
 
     const getItem = (key, expire=false) => {
         return storage.getItem(key).then(d => {
-            if(!d.data) throw `${key} not in cache`
+            if(!(d && d.data)) throw `${key} not in cache`
             let expired = expire || (+new Date) > d.expiresAt
             if(expired) throw `${key} is expired`
             return d.data
@@ -15,6 +15,7 @@ const cache = () => {
     }
 
     const setItem = (key, val, timeout=5*60*60*1000) => {
+        if(!val) return Promise.reject('val was null/undefined')
         const expiresAt = +new Date + timeout
         return storage.setItem(key, {expiresAt, data:val})
     }

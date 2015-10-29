@@ -1,18 +1,17 @@
-import * as utils from './utils'
-
 /**
  * batches in-flight requests into the same request object
  */
 const _fetch = f => {
-    let cache = {}
+    let inflight = {}
+
     return (url, options={}) => {
         let {method} = options
 
         if(method === 'post')
             return f(url, options)
 
-        return cache[url] ||
-            (cache[url] =
+        return inflight[url] ||
+            (inflight[url] =
                 new Promise((res,rej) => {
                     f(url, {...options, compress: false})
                     .then(r => r.text())
@@ -26,9 +25,11 @@ const _fetch = f => {
                     .then(d => res(d))
                 })
                 .then(data => {
-                    cache = {...cache, [url]: undefined}
+                    inflight = {...inflight, [url]: undefined}
                     return data
-                }).catch(e => console.error(e, url)))
+                })
+                .catch(e =>
+                    console.error(e, url)))
     }
 }
 
