@@ -16,8 +16,48 @@ Small functional problem-solving, event, state-management, and caching utilities
 
 #### How to get started
 
-1. start your own node project, then `npm install universal-utils`
-2. `import {fetch, store, cache, resource} from 'universal-utils'` to use them
+1. start your own node project, then `npm i -S universal-utils`
+2. your package.json or build system should consider that this is **published as an es2015 module**, in otherwords you need to tell both node (for server-side) and browserify/webpack/gulp/broccoli/etc (client-side) that this module needs to be transpiled **before being requir()'ed**.
+
+    Here's an example:
+
+    `universal-js-boilerplate` includes this package by default, and its package.json includes some `babel` (v6), `babelify` (v7), and `browserify` options in the json:
+
+    ```js
+    {
+        ...,
+        "babel": {
+            "plugins": [
+                "babel-plugin-transform-es2015-modules-commonjs"
+            ],
+            "presets": [
+                "es2015",
+                "stage-0",
+                "react"
+            ]
+        },
+        "browserify": {
+            "transform": [
+                [
+                    "babelify", {
+                        "ignore": false
+                    }
+                ]
+            ]
+        },
+        ...
+    }
+    ```
+
+    The `browserify` options tell your project (that is calling `import` or `require` on `universal-utils`) to transpile `universal-utils` with `babelify`, which uses the `babel` options to transform this es2015 module into es5 before completeing the `require()`/`import`.
+
+    In addition, the server scripts in `universal-js-boilerplate` have the following at the very top of the file, to ensure that an `require()`s done after this will automatically transpile `.js`, `.es6`, `.es2015` and `.jsx` files in the server-side environment before importing the code:
+
+    ```js
+    require('babel-core/register')
+    ```
+
+3. `import {fetch, store, cache, resource} from 'universal-utils'` to use this package in server or client-side
 
 #### Changelog
 
