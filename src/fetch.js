@@ -1,3 +1,5 @@
+require('isomorphic-fetch')
+
 /**
  * batches in-flight requests into the same request object
  */
