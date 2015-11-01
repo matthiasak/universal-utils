@@ -1,5 +1,4 @@
-require('isomorphic-fetch')
-let fetch = global.fetch
+import fetch from './fetch'
 import store from './store'
 import resource from './resource'
 import cache from './cache'

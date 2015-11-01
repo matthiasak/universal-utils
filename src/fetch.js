@@ -1,5 +1,5 @@
 require('isomorphic-fetch')
-let fetch = global.fetch
+const fetch = global.fetch
 
 /**
  * batches in-flight requests into the same request object
