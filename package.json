@@ -2,7 +2,7 @@
   "name": "universal-utils",
   "version": "0.0.17",
   "description": "functional, event, storage, cache, and other utilities",
-  "main": "src/index.js",
+  "main": "src/exporter.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
