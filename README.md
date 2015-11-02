@@ -21,33 +21,26 @@ Small functional problem-solving, event, state-management, and caching utilities
 
     Here's an example:
 
-    `universal-js-boilerplate` includes this package by default, and its package.json includes some `babel` (v6), `babelify` (v7), and `browserify` options in the json:
+    `universal-js-boilerplate` includes this package by default, and its package.json includes some `babel` (v5.x), `babelify` (v6.x), and `browserify` options in the json:
 
     ```js
     {
         ...,
         "babel": {
-            "plugins": [
-                "babel-plugin-transform-es2015-modules-commonjs"
-            ],
-            "presets": [
-                "es2015",
-                "stage-0",
-                "react"
-            ]
+            "stage": 0,
+            "loose": "all",
+            "ignore": "\/node_modules\/.*(?![.]es6|[.]jsx|[.]es7|[.]es2015|[.]es2016)"
         },
         "browserify": {
             "transform": [
-                [
-                    "babelify", {
-                        "ignore": false
-                    }
-                ]
+                ["babelify"]
             ]
         },
         ...
     }
     ```
+
+    > **I WILL UPDATE TO BABEL v6 SOON; BUT NOT UNTIL STAGE 0 HAS BETTER SUPPORT; SEE THE BABEL GH-ISSUES FOR MORE INFO/REASONING**
 
     The `browserify` options tell your project (that is calling `import` or `require` on `universal-utils`) to transpile `universal-utils` with `babelify`, which uses the `babel` options to transform this es2015 module into es5 before completeing the `require()`/`import`.
 
