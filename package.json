@@ -2,7 +2,7 @@
   "name": "universal-utils",
   "version": "0.0.24",
   "description": "functional, event, storage, cache, and other utilities",
-  "main": "dist/index.es6",
+  "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist"
   },
