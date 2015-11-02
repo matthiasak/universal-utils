@@ -4,7 +4,8 @@
   "description": "functional, event, storage, cache, and other utilities",
   "main": "dist/index.js",
   "scripts": {
-    "build": "babel src --out-dir dist"
+    "build": "babel src --out-dir dist; cp ./src/cache/package.json ./dist/cache/package.json;",
+    "deploy": "npm run build; git add --all .; git commit -am 'new build'; npm version patch; git push origin HEAD; npm publish;"
   },
   "author": "Matt Keas (@matthiasak)",
   "license": "MIT",
