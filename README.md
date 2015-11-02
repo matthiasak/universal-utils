@@ -17,43 +17,13 @@ Small functional problem-solving, event, state-management, and caching utilities
 #### How to get started
 
 1. start your own node project, then `npm i -S universal-utils`
-2. your package.json or build system should consider that this is **published as an es2015 module**, in otherwords you need to tell both node (for server-side) and browserify/webpack/gulp/broccoli/etc (client-side) that this module needs to be transpiled **before being requir()'ed**.
-
-    Here's an example:
-
-    `universal-js-boilerplate` includes this package by default, and its package.json includes some `babel` (v5.x), `babelify` (v6.x), and `browserify` options in the json:
-
-    ```js
-    {
-        ...,
-        "babel": {
-            "stage": 0,
-            "loose": "all",
-            "ignore": "\/node_modules\/.*(?![.]es6|[.]jsx|[.]es7|[.]es2015|[.]es2016)"
-        },
-        "browserify": {
-            "transform": [
-                ["babelify"]
-            ]
-        },
-        ...
-    }
-    ```
-
-    > **I WILL UPDATE TO BABEL v6 SOON; BUT NOT UNTIL STAGE 0 HAS BETTER SUPPORT; SEE THE BABEL GH-ISSUES FOR MORE INFO/REASONING**
-
-    The `browserify` options tell your project (that is calling `import` or `require` on `universal-utils`) to transpile `universal-utils` with `babelify`, which uses the `babel` options to transform this es2015 module into es5 before completeing the `require()`/`import`.
-
-    In addition, the server scripts in `universal-js-boilerplate` have the following at the very top of the file, to ensure that an `require()`s done after this will automatically transpile `.js`, `.es6`, `.es2015` and `.jsx` files in the server-side environment before importing the code:
-
-    ```js
-    require('babel-core/register')
-    ```
-
+2. this package is compiled to es5, so you don't need to worry about the Babel require hook, or anything of the sort.
 3. `import {fetch, store, cache, resource} from 'universal-utils'` to use this package in server or client-side
 
 #### Changelog
 
+- Nov 1, 2015
+    - updates to build system, precompiled to es5
 - Oct 22, 2015
     - project started
 
