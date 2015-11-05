@@ -1,5 +1,7 @@
 'use strict';
 
+exports.__esModule = true;
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 // import fetch, {batch} from './fetch'
@@ -81,6 +83,8 @@ var muxer = function muxer(batch_url) {
     };
 };
 
+exports['default'] = muxer;
+
 // example
 // const logf = (...args) => log(args) || fetch(...args)
 // const uberfetch = muxer('/api/mux', 200, logf)
@@ -92,3 +96,4 @@ var muxer = function muxer(batch_url) {
 //      {"method":"POST","body":"[
 //      {url:'/cows', options:{}}, {url:'/kittens',options:{}}
 // ]
+module.exports = exports['default'];

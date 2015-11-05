@@ -57,6 +57,8 @@ const muxer = (batch_url, timeout=200, f=iso_fetch) => {
                 data[index]))
 }
 
+export default muxer
+
 // example
 // const logf = (...args) => log(args) || fetch(...args)
 // const uberfetch = muxer('/api/mux', 200, logf)
@@ -68,3 +70,4 @@ const muxer = (batch_url, timeout=200, f=iso_fetch) => {
 //      {"method":"POST","body":"[
 //      {url:'/cows', options:{}}, {url:'/kittens',options:{}}
 // ]
+
