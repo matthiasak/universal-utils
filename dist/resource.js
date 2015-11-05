@@ -14,9 +14,13 @@ var _cache = require('./cache');
 
 var _cache2 = _interopRequireDefault(_cache);
 
-var _fetch = require('./fetch');
+var _fetch2 = require('./fetch');
 
-var _fetch2 = _interopRequireDefault(_fetch);
+var _fetch3 = _interopRequireDefault(_fetch2);
+
+require('isomorphic-fetch');
+var _fetch = global.fetch;
+var fetch = _fetch3['default'](_fetch);
 
 var resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -48,7 +52,7 @@ var resource = function resource() {
             return (nocache ? Promise.reject() : _cache2['default'].getItem(name + ':' + id)).then(function (d) {
                 return res(d);
             })['catch'](function (error) {
-                return (get instanceof Function ? get.apply(undefined, [id].concat(params)) : _fetch2['default'](getURL.apply(undefined, [id].concat(params)))).then(function (d) {
+                return (get instanceof Function ? get.apply(undefined, [id].concat(params)) : fetch(getURL.apply(undefined, [id].concat(params)))).then(function (d) {
                     return !global.document && parse ? parse(d) : d;
                 }).then(function (d) {
                     if (!d) throw 'no data returned from ' + name + ':' + _id;

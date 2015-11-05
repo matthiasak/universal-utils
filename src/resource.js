@@ -1,6 +1,10 @@
 import store from './store'
 import cache from './cache'
-import fetch from './fetch'
+import batch from './fetch'
+
+require('isomorphic-fetch')
+const _fetch = global.fetch
+const fetch = batch(_fetch)
 
 const resource = (config={}, defaultState={}) => {
 

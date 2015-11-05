@@ -1,10 +1,7 @@
-require('isomorphic-fetch')
-const fetch = global.fetch
-
 /**
  * batches in-flight requests into the same request object
  */
-const betch = f => {
+const batch = f => {
     let inflight = {}
 
     return (url, options={}) => {
@@ -36,7 +33,4 @@ const betch = f => {
     }
 }
 
-const _f = batch(fetch)
-
-export default _f
-export batch
+export default batch
