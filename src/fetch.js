@@ -4,7 +4,7 @@ const fetch = global.fetch
 /**
  * batches in-flight requests into the same request object
  */
-const _fetch = f => {
+const betch = f => {
     let inflight = {}
 
     return (url, options={}) => {
@@ -36,6 +36,7 @@ const _fetch = f => {
     }
 }
 
-const _f = _fetch(fetch)
+const _f = batch(fetch)
 
 export default _f
+export batch
