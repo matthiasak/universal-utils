@@ -32,14 +32,13 @@ const debounce = (func, wait, immediate, timeout, p) =>
 const muxer = (batch_url, timeout=200, f=iso_fetch) => {
     let payload = store([])
 
-        // puts url,options,id on payload
+    // puts url,options,id on payload
     let worker = (url, options) =>
         payload.dispatch((state, next) =>
-            next(state.concat({url, options}))
-            .then(state =>
-                state.length-1))
+            next([...state, {url, options}])
+        ).then(state => state.length-1)
 
-        // sends payload after 200ms
+    // sends payload after 200ms
     let send = debounce(() =>
         f(batch_url,
             {method:'POST',body:JSON.stringify(payload.state())})
@@ -70,4 +69,3 @@ export default muxer
 //      {"method":"POST","body":"[
 //      {url:'/cows', options:{}}, {url:'/kittens',options:{}}
 // ]
-

@@ -3,10 +3,10 @@ import store from './store'
 import resource from './resource'
 import cache from './cache'
 import router from './router'
-import demux from './demux'
+import mux from './mux'
 
 require('isomorphic-fetch')
 const _fetch = global.fetch
 const fetch = batch(_fetch)
 
-export default {cache, fetch, store, resource, router, batch, demux}
+export default {cache, fetch, store, resource, router, batch, mux}
