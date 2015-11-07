@@ -1,19 +1,20 @@
-import store from './store'
+import store as _store from './store'
 import cache from './cache'
 import batch from './fetch'
 
 require('isomorphic-fetch')
-const _fetch = global.fetch
-const fetch = batch(_fetch)
+const __fetch = global.fetch
+const _fetch = batch(__fetch)
 
 const resource = (config={}, defaultState={}) => {
 
     let inflight = {}
 
-    const _store = store(defaultState),
-        {get, getURL, parse, nocache, name, cacheDuration} = config
+    const store = _store(defaultState),
+        {url, fetch, parse, nocache, name, cacheDuration} = config,
+        f = fetch || _fetch
 
-    const _get = (id, ...params) => {
+    const get = (id, ...params) => {
         let _id = id
 
         if(_id instanceof Object)
@@ -27,23 +28,21 @@ const resource = (config={}, defaultState={}) => {
                     cache.getItem(`${name}:${id}`))
                 .then(d => res(d))
                 .catch(error =>
-                    (get instanceof Function ?
-                        get(id, ...params) :
-                        fetch(getURL(id, ...params)))
+                    f(url(id, ...params), {resourceName: name})
                     .then(d => !global.document && parse ? parse(d) : d)
                     .then(d => {
                         if(!d) throw `no data returned from ${name}:${_id}`
                         return d
                     })
                     .then(d =>
-                        _store.dispatch((state, next) => {
+                        store.dispatch((state, next) => {
                             let _state = {...state, [_id]: d} // make new state
                             inflight = {...inflight, [_id]: undefined} // clear in-flight promise
                             !nocache && cache.setItem(`${name}:${_id}`, d, cacheDuration)
                             next(_state) // store's new state is _state
                         })
-                    .then(state => state[_id])) // pipe state[id] to get()
-                    .then(d => res(d)) // resolve the get(id)
+                    .then(state => state[_id])) // pipe state[id] to the call to f()
+                    .then(d => res(d)) // resolve the f(url(id))
                     .catch(e => {
                         inflight = {...inflight, [_id]: undefined} // in case of fire...
                         rej(e)
@@ -51,11 +50,7 @@ const resource = (config={}, defaultState={}) => {
             ))
     }
 
-    return {
-        ...config,
-        store: _store,
-        get: _get
-    }
+    return { ...config, store, get }
 }
 
 export default resource
