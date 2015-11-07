@@ -56,7 +56,14 @@ var muxer = function muxer(batch_url) {
 
     // sends payload after `wait` ms
     var send = debounce(function () {
-        return f(batch_url, { method: 'POST', body: JSON.stringify(payload.state()) }).then(function (data) {
+        return f(batch_url, {
+            method: 'POST',
+            body: JSON.stringify(payload.state()),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then(function (data) {
             payload.state([]); // reset payload for next batch of requests
             callbacks.forEach(function (cb) {
                 return cb(data);

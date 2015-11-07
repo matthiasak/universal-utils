@@ -35,8 +35,14 @@ const muxer = (batch_url, f=iso_fetch, wait=100) => {
 
     // sends payload after `wait` ms
     const send = debounce(() =>
-        f(batch_url,
-            {method:'POST',body:JSON.stringify(payload.state())})
+        f(batch_url, {
+            method:'POST',
+            body:JSON.stringify(payload.state()),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+        })
         .then(data => {
             payload.state([]) // reset payload for next batch of requests
             callbacks.forEach(cb => cb(data)) // ordered array of requests
