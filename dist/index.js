@@ -24,13 +24,13 @@ var _router = require('./router');
 
 var _router2 = _interopRequireDefault(_router);
 
-var _demux = require('./demux');
+var _mux = require('./mux');
 
-var _demux2 = _interopRequireDefault(_demux);
+var _mux2 = _interopRequireDefault(_mux);
 
 require('isomorphic-fetch');
 var _fetch = global.fetch;
 var fetch = _fetch3['default'](_fetch);
 
-exports['default'] = { cache: _cache2['default'], fetch: fetch, store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch3['default'], demux: _demux2['default'] };
+exports['default'] = { cache: _cache2['default'], fetch: fetch, store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch3['default'], mux: _mux2['default'] };
 module.exports = exports['default'];
