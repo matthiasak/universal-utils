@@ -1,4 +1,4 @@
-import store as _store from './store'
+import {store as _store} from './store'
 import cache from './cache'
 import batch from './fetch'
 

@@ -8,8 +8,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'd
 
 var _store2 = require('./store');
 
-var _store3 = _interopRequireDefault(_store2);
-
 var _cache = require('./cache');
 
 var _cache2 = _interopRequireDefault(_cache);
@@ -19,8 +17,8 @@ var _fetch2 = require('./fetch');
 var _fetch3 = _interopRequireDefault(_fetch2);
 
 require('isomorphic-fetch');
-var _fetch = global.fetch;
-var fetch = _fetch3['default'](_fetch);
+var __fetch = global.fetch;
+var _fetch = _fetch3['default'](__fetch);
 
 var resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
@@ -28,15 +26,16 @@ var resource = function resource() {
 
     var inflight = {};
 
-    var _store = _store3['default'](defaultState);
-    var get = config.get;
-    var getURL = config.getURL;
+    var store = _store2.store(defaultState);
+    var url = config.url;
+    var fetch = config.fetch;
     var parse = config.parse;
     var nocache = config.nocache;
     var name = config.name;
     var cacheDuration = config.cacheDuration;
+    var f = fetch || _fetch;
 
-    var _get = function _get(id) {
+    var get = function get(id) {
         for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
             params[_key - 1] = arguments[_key];
         }
@@ -52,13 +51,13 @@ var resource = function resource() {
             return (nocache ? Promise.reject() : _cache2['default'].getItem(name + ':' + id)).then(function (d) {
                 return res(d);
             })['catch'](function (error) {
-                return (get instanceof Function ? get.apply(undefined, [id].concat(params)) : fetch(getURL.apply(undefined, [id].concat(params)))).then(function (d) {
+                return f(url.apply(undefined, [id].concat(params)), { resourceName: name }).then(function (d) {
                     return !global.document && parse ? parse(d) : d;
                 }).then(function (d) {
                     if (!d) throw 'no data returned from ' + name + ':' + _id;
                     return d;
                 }).then(function (d) {
-                    return _store.dispatch(function (state, next) {
+                    return store.dispatch(function (state, next) {
                         var _extends2, _extends3;
 
                         var _state = _extends({}, state, (_extends2 = {}, _extends2[_id] = d, _extends2)); // make new state
@@ -68,10 +67,10 @@ var resource = function resource() {
                     }).then(function (state) {
                         return state[_id];
                     });
-                }) // pipe state[id] to get()
+                }) // pipe state[id] to the call to f()
                 .then(function (d) {
                     return res(d);
-                }) // resolve the get(id)
+                }) // resolve the f(url(id))
                 ['catch'](function (e) {
                     var _extends4;
 
@@ -82,10 +81,7 @@ var resource = function resource() {
         }));
     };
 
-    return _extends({}, config, {
-        store: _store,
-        get: _get
-    });
+    return _extends({}, config, { store: store, get: get });
 };
 
 exports['default'] = resource;
