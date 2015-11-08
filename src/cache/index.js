@@ -42,7 +42,7 @@ const nodeCache = () => {
             return new Promise((res,rej) => {
                 if(key in cache) {
                     let data = clone(cache[key]),
-                        expired = expire || data.expiresAt
+                        expired = expire || (data.expiresAt < +new Date)
                     if(expired) return rej(`${key} is expired`)
                     return res(data.data)
                 }

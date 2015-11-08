@@ -1,6 +1,7 @@
+import batch from './fetch'
 require('isomorphic-fetch')
-const iso_fetch = global.fetch
-// import fetch, {batch} from './fetch'
+const _fetch = global.fetch
+const fetch = batch(_fetch)
 import store from './store'
 
 const debounce = (func, wait, timeout) =>
@@ -24,7 +25,7 @@ const debounce = (func, wait, timeout) =>
  * ]
  */
 
-const muxer = (batch_url, f=iso_fetch, wait=100) => {
+const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
     const payload = store([])
 
     // puts url,options,id on payload
@@ -33,25 +34,31 @@ const muxer = (batch_url, f=iso_fetch, wait=100) => {
             next([...state, {url, options}])
         ).then(state => state.length-1)
 
-    // sends payload after `wait` ms
-    const send = debounce(() =>
+    const sendImmediate = () => {
+        let cbs = callbacks
+        callbacks = []
+        const p = payload.state()
+        payload.dispatch((state,next) => next(state), []) // reset payload for next batch of requests
         f(batch_url, {
             method:'POST',
-            body:JSON.stringify(payload.state()),
+            body:JSON.stringify(p),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
         })
-        .then(data => {
-            payload.state([]) // reset payload for next batch of requests
-            callbacks.forEach(cb => cb(data)) // ordered array of requests
-            callbacks = []
-        }), wait)
+        .then(data => cbs.forEach(cb => cb(data))) // ordered array of requests
+    }
+
+    // sends payload after `wait` ms
+    const send = debounce(sendImmediate, wait)
 
     let callbacks = []
     const queue = cb => {
         callbacks.push(cb)
+        // if(callbacks.length >= max_buffer_size)
+        //     sendImmediate()
+        // else
         send()
     }
 

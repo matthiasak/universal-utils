@@ -14,7 +14,17 @@ var batch = function batch(f) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
         var method = options.method;
 
-        if (method === 'post') return f(url, options);
+        if (method === 'post') return f(url, options).then(function (r) {
+            return r.text();
+        }).then(function (text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                throw url + ' did not return JSON';
+            }
+        }).then(function (d) {
+            return res(d);
+        });
 
         return inflight[url] || (inflight[url] = new Promise(function (res, rej) {
             f(url, _extends({}, options, { compress: false })).then(function (r) {

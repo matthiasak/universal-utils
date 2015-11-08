@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "babel src --out-dir dist; cp ./src/cache/package.json ./dist/cache/package.json;",
-    "deploy": "npm run build; git add --all .; git commit -am 'new build'; npm version patch; git push origin HEAD; npm publish;"
+    "deploy": "npm run build; git add --all .; git commit -am 'new build'; npm version patch; git push origin HEAD; npm publish;",
+    "watch": "babel src --out-dir dist -w; cp ./src/cache/package.json ./dist/cache/package.json;"
   },
   "author": "Matt Keas (@matthiasak)",
   "license": "MIT",

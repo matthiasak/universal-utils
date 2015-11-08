@@ -56,7 +56,7 @@ var nodeCache = function nodeCache() {
                 return new Promise(function (res, rej) {
                     if (key in cache) {
                         var data = clone(cache[key]),
-                            expired = expire || data.expiresAt;
+                            expired = expire || data.expiresAt < +new Date();
                         if (expired) return rej(key + ' is expired');
                         return res(data.data);
                     }

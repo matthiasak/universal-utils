@@ -9,6 +9,13 @@ const batch = f => {
 
         if(method === 'post')
             return f(url, options)
+                .then(r => r.text())
+                .then(text => {
+                    try { return JSON.parse(text) } catch(e) {
+                        throw `${url} did not return JSON`
+                    }
+                })
+                .then(d => res(d))
 
         return inflight[url] ||
             (inflight[url] =
@@ -16,9 +23,7 @@ const batch = f => {
                     f(url, {...options, compress: false})
                     .then(r => r.text())
                     .then(text => {
-                        try {
-                            return JSON.parse(text)
-                        } catch(e){
+                        try { return JSON.parse(text) } catch(e) {
                             throw `${url} did not return JSON`
                         }
                     })

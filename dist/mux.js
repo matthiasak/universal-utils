@@ -4,14 +4,17 @@ exports.__esModule = true;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-// import fetch, {batch} from './fetch'
+var _fetch2 = require('./fetch');
+
+var _fetch3 = _interopRequireDefault(_fetch2);
 
 var _store = require('./store');
 
 var _store2 = _interopRequireDefault(_store);
 
 require('isomorphic-fetch');
-var iso_fetch = global.fetch;
+var _fetch = global.fetch;
+var fetch = _fetch3['default'](_fetch);
 
 var debounce = function debounce(func, wait, timeout) {
     return function () {
@@ -40,8 +43,9 @@ var debounce = function debounce(func, wait, timeout) {
  */
 
 var muxer = function muxer(batch_url) {
-    var f = arguments.length <= 1 || arguments[1] === undefined ? iso_fetch : arguments[1];
-    var wait = arguments.length <= 2 || arguments[2] === undefined ? 100 : arguments[2];
+    var f = arguments.length <= 1 || arguments[1] === undefined ? fetch : arguments[1];
+    var wait = arguments.length <= 2 || arguments[2] === undefined ? 60 : arguments[2];
+    var max_buffer_size = arguments.length <= 3 || arguments[3] === undefined ? 8 : arguments[3];
 
     var payload = _store2['default']([]);
 
@@ -54,27 +58,36 @@ var muxer = function muxer(batch_url) {
         });
     };
 
-    // sends payload after `wait` ms
-    var send = debounce(function () {
-        return f(batch_url, {
+    var sendImmediate = function sendImmediate() {
+        var cbs = callbacks;
+        callbacks = [];
+        var p = payload.state();
+        payload.dispatch(function (state, next) {
+            return next(state);
+        }, []); // reset payload for next batch of requests
+        f(batch_url, {
             method: 'POST',
-            body: JSON.stringify(payload.state()),
+            body: JSON.stringify(p),
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
         }).then(function (data) {
-            payload.state([]); // reset payload for next batch of requests
-            callbacks.forEach(function (cb) {
+            return cbs.forEach(function (cb) {
                 return cb(data);
-            }); // ordered array of requests
-            callbacks = [];
-        });
-    }, wait);
+            });
+        }); // ordered array of requests
+    };
+
+    // sends payload after `wait` ms
+    var send = debounce(sendImmediate, wait);
 
     var callbacks = [];
     var queue = function queue(cb) {
         callbacks.push(cb);
+        // if(callbacks.length >= max_buffer_size)
+        //     sendImmediate()
+        // else
         send();
     };
 
