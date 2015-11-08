@@ -13,6 +13,7 @@ var batch = function batch(f) {
     return function (url) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
         var method = options.method;
+        var key = url + ':' + JSON.stringify(options);
 
         if (method === 'post') return f(url, options).then(function (r) {
             return r.text();
@@ -26,7 +27,7 @@ var batch = function batch(f) {
             return res(d);
         });
 
-        return inflight[url] || (inflight[url] = new Promise(function (res, rej) {
+        return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
             f(url, _extends({}, options, { compress: false })).then(function (r) {
                 return r.text();
             }).then(function (text) {
@@ -37,11 +38,13 @@ var batch = function batch(f) {
                 }
             }).then(function (d) {
                 return res(d);
+            })['catch'](function (e) {
+                return rej(e);
             });
         }).then(function (data) {
             var _extends2;
 
-            inflight = _extends({}, inflight, (_extends2 = {}, _extends2[url] = undefined, _extends2));
+            inflight = _extends({}, inflight, (_extends2 = {}, _extends2[key] = undefined, _extends2));
             return data;
         })['catch'](function (e) {
             return console.error(e, url);

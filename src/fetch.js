@@ -5,7 +5,8 @@ const batch = f => {
     let inflight = {}
 
     return (url, options={}) => {
-        let {method} = options
+        let {method} = options,
+            key = `${url}:${JSON.stringify(options)}`
 
         if(method === 'post')
             return f(url, options)
@@ -17,8 +18,8 @@ const batch = f => {
                 })
                 .then(d => res(d))
 
-        return inflight[url] ||
-            (inflight[url] =
+        return inflight[key] ||
+            (inflight[key] =
                 new Promise((res,rej) => {
                     f(url, {...options, compress: false})
                     .then(r => r.text())
@@ -28,9 +29,10 @@ const batch = f => {
                         }
                     })
                     .then(d => res(d))
+                    .catch(e => rej(e))
                 })
                 .then(data => {
-                    inflight = {...inflight, [url]: undefined}
+                    inflight = {...inflight, [key]: undefined}
                     return data
                 })
                 .catch(e =>

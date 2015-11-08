@@ -40,13 +40,18 @@ var resource = function resource() {
             params[_key - 1] = arguments[_key];
         }
 
-        if (id instanceof Object) id = Object.keys(id).sort().map(function (k) {
+        // generate a key unique to this request for muxing/batching,
+        // if need be (serialized with the options)
+        var _id = id;
+        if (_id instanceof Object) _id = Object.keys(_id).sort().map(function (k) {
             return k + ':' + id[k];
         }).join(',');
 
+        // console.log('request to:', url(id, ...params), 'with', id, params)
+
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
-        return inflight[id] || (inflight[id] = new Promise(function (res, rej) {
+        return inflight[_id] || (inflight[_id] = new Promise(function (res, rej) {
             return (nocache ? Promise.reject() : _cache2['default'].getItem(name + ':' + id)).then(function (d) {
                 return res(d);
             })['catch'](function (error) {
@@ -65,7 +70,7 @@ var resource = function resource() {
                             var _extends2, _extends3;
 
                             var _state = _extends({}, state, (_extends2 = {}, _extends2[id] = d, _extends2)); // make new state
-                            inflight = _extends({}, inflight, (_extends3 = {}, _extends3[id] = undefined, _extends3)); // clear in-flight promise
+                            inflight = _extends({}, inflight, (_extends3 = {}, _extends3[_id] = undefined, _extends3)); // clear in-flight promise
                             !nocache && _cache2['default'].setItem(name + ':' + id, d, cacheDuration);
                             next(_state); // store's new state is _state
                         }).then(function (state) {
@@ -78,7 +83,7 @@ var resource = function resource() {
                     ['catch'](function (e) {
                         var _extends4;
 
-                        inflight = _extends({}, inflight, (_extends4 = {}, _extends4[id] = undefined, _extends4)); // in case of fire...
+                        inflight = _extends({}, inflight, (_extends4 = {}, _extends4[_id] = undefined, _extends4)); // in case of fire...
                         rej(e);
                     })
                 );
