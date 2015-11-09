@@ -5,11 +5,12 @@
 [![NPM](https://nodei.co/npm/universal-utils.png)](https://nodei.co/npm/universal-utils/)
 ![](https://david-dm.org/matthiasak/universal-utils.svg)
 
-Small functional problem-solving, event, state-management, and caching utilities:
+Small functional problem-solving, event, state-management, and caching utilities.
 
-- a universal XMLHTTPRequest `fetch()` that returns ES6 Promises
 - a universal caching mechanism that can cache to WebSQL, IndexedDB, or Local Storage in the browser, or to memory and redis in node
-- a universal `fetch()` wrapper that can batch in-flight requests to the same URL, meaning simultaneous requests to the same URL will be resolved by a single network request
+- a universal `batch()` wrapper that can batch in-flight requests to the same URL, meaning simultaneous requests to the same URL will be resolved by a single network request
+- a universal "auto-batched" XMLHTTPRequest `fetch()` method that returns ES6 Promises
+- a universal `mux()` wrapper that can multiplex requests from one application to another ("mux" 10 browser-side network requests into 1 request to be sent to the server)
 - a universal `store()` that maintains immutable pure JSON state (**NOTE: can only have Objects and Arrays, no custom constructors stored in it**) and implements an asynchronous flux/redux pattern that can chain reducer functions together to represent state
 - a universal `resource()` that fetches, batches, caches, and maintains an internal store of data associated with a particular resource / model / or API endpoint
 - a small browser-side `router()` that handles `hashchange` events and maps them to callbacks
