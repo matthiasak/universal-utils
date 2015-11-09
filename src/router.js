@@ -1,3 +1,7 @@
+// The `router()` module is a simple client-side `hashchange` event router that allows Single Page Apps to effectively map and listen to route changes. For `router()` implementation examples, see the `router.js` file.
+//
+// Example usage at end of this file.
+
 const router = (routes, routeTransform) => {
     const hashroutes = Object.keys(routes).map(route => {
         let tokens = route.match(/:(\w+)/ig),

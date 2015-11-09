@@ -35,31 +35,28 @@ Matthew Keas, [@matthiasak](https://twitter.com/@matthiasak)
 
 These are tiny utilities that, while limiting in API "surface area", pack a lot of punch. By having tiny modules that provide a very scoped feature, I have been able to compose wrappers and wrappers (around wrappers) which let me configure my code to an exact need and specification, all the while keeping modules testable and running at lightning speed.
 
-The `fetch()` module batches in-flight requests, so if at any point in time, anywhere in my front-end or back-end application I have a calls occur to `fetch('http://api.github.com/users/matthiasak')` while another to that URL is "in-flight", the Promise returned by both of those calls will be resolved by a single network request.
+Functionally-oriented programming is all the rage these days, but in this post I want to emphasize that functional programming is a subset of a more important overarching programming paradigm: compositional programming.
 
-The `cache()` module is a mechanism in which I can customize the storage mechanism, and even force the data to expire at a certain interval (which is default 5 minutes). Thus, any request to a `cacheInstance.getItem(key)` returns a Promise that resolves if the data is cached and is not yet expired, or `throws` an error and thus the Promise must `catch()`. The cache layers in the browser are configured to use WebSQL, IndexedDB, or local-storage, depending on browser support. The node cache layer uses a redis instance (via environment variables) if provided, or an in-memory object cache.
+If you've ever used Unix pipes, you'll understand the importance and flexibility of composing small reusable programs to get powerful and emergent behaviors. Similarly, if you program functionally, you'll know how cool it is to compose a bunch of small reusable functions into a fully featured program.
 
-The `store()` module is a mechanism to store an immutable object that represents state of an application. Any application may have one or more active stores, so there's no limitation from how you use the data. The store itself provides four methods: `state()`, `dispatch(reducer, state)`, `to(cb)`, `remove(cb)`.
+#### How to learn this library
 
-1. The `store.state()` returns a clone of the internal state object, which is simply a pure copy of JSON of the data. Since this uses pure JSON representation in-lieue of actual Tries and immutable data libraries, this keeps the code footprint tiny, but you can only store pure JSON data in the store.
-2. The `store.to(cb)` will register `cb` as a callback function, invoking `cb(nextState)` whenever the store's state is updated with `store.dispatch()` (`store.remove(cb)` simply does the opposite, removing the callback from the list of event listeners).
-3. The biggest method implemented by `store()` is `store.dispatch(reducer, state=store.state())`. By default, the second parameter is the existing state of the `store`, but you can override the state object input, if need be. The key here is the redux-inspired `reducer`, which is a function that **you** write that receives two arguments, `state` and `next()`. You should modify the state object somehow, or create a copy, and pass it into `next(state)` to trigger an update to be sent to listener. For example:
+Since each file in this library is an abstraction of some sort, I will address the simplest pieces first, and then work my way up to the most complex parts. Learn how to use these utilities by following along in this order:
 
-    ```js
-    const logger = (state) => console.log('state changed! -->', state)
-    store.to(logger)
+1. [package.json](package.json) - take a look at what libraries are installed by default when you require this package
+2. [index.js](src/index.js) - everything in this repo is simply an exported module by index.js
+3. [fetch.js](src/fetch.js) - learn how a single fetch() function can be used to reuse in-flight network requests to the same URL
+4. [store.js](src/store.js) - learn how to make a simple "flux-like", "redux-like" event-driven store
+5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty rpograms into fewer requests
+6. [cache](src/cache) - observe the API of cache implementations... just two methods with similar signatures:
 
-    store.distpatch((state, next) => {
-        setTimeout(() => {
-            let timestamp = +new Date
-            next({ ...state, timestamp })
-        }, 2000)
-    })
-    ```
+    - `getItem(key, expire=false): Promise`
+    - `setItem(key, value, timeout=5*60*60*1000): Promise`
 
-The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`), exposing one primary method `get()`. I'll add more details to this module and how to use it at a later time.
+    Based on whether the browser or node is `require()`ing this folder, the API will let you cache data in WebSQL/localstorage (browser) or Redis/in-memory (node).
 
-The `router()` module is a simple client-side `hashchange` event router that allows Single Page Apps to effectively map and listen to route changes. For `router()` implementation examples, see the `router.js` file.
+7. [resource.js](src/resource.js) - learn how to wrap a store, muxer, fetcher, cache, and other configurations into a universal wrapper that can automatically keep cached API requests in both the client or server.
+8. [router.js](src/router.js) - The only non-universal piece of code in this repo... this is a simple routing library that can be used in lieue of larger, more verbose libraries and implementations out there like page.js or Backbone's `Backbone.Router()`.
 
 #### License
 
