@@ -17,8 +17,8 @@ Small functional problem-solving, event, state-management, and caching utilities
 #### How to get started
 
 1. start your own node project, then `npm i -S universal-utils`
-2. this package is compiled to es5, so you don't need to worry about the Babel require hook, or anything of the sort.
-3. `import {fetch, store, cache, resource} from 'universal-utils'` to use this package in server or client-side
+2. this package is compiled to es5, so you don't need to worry about the Babel require hook, or anything of the sort... just do...
+3. `import {cache, fetch, store, resource, router, batch, mux} from 'universal-utils'` to use this package in server or client-side
 
 #### Changelog
 
