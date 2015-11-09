@@ -53,7 +53,7 @@ Since each file in this library is an abstraction of some sort, I will address t
 2. [index.js](src/index.js) - everything in this repo is simply an exported module by index.js
 3. [fetch.js](src/fetch.js) - learn how a single fetch() function can be used to reuse in-flight network requests to the same URL
 4. [store.js](src/store.js) - learn how to make a simple "flux-like", "redux-like" event-driven store
-5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty rpograms into fewer requests
+5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty programs into fewer requests
 6. [cache](src/cache) - observe the API of cache implementations... just two methods with similar signatures:
 
     - `getItem(key, expire=false): Promise`
