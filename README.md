@@ -23,6 +23,11 @@ Small functional problem-solving, event, state-management, and caching utilities
 
 #### Changelog
 
+- Nov 8, 2015
+    - added notes to README, the [What and What](#what-and-why) and [How to learn this library](#how-to-learn-this-library) sections
+    - added `mux` implementation and `router` implementation
+    - numerous bug fixes for the resource
+    - numerous speed and other enhancements for the various libs
 - Nov 1, 2015
     - updates to build system, precompiled to es5
 - Oct 22, 2015
