@@ -22,7 +22,6 @@
 
 'use strict';
 
-exports.__esModule = true;
 var raf = function raf(cb) {
     return requestAnimationFrame ? requestAnimationFrame(cb) : setTimeout(cb, 0);
 };
@@ -61,14 +60,23 @@ var channel = function channel() {
     },
         take = function take() {
         var x = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+        var taker = arguments.length <= 1 || arguments[1] === undefined ? function () {
+            for (var _len2 = arguments.length, vals = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
+                vals[_key2] = arguments[_key2];
+            }
 
-        var _c = _take ? _take.apply(undefined, c).slice(0, x) : c,
-            diff = _c.length - x;
-        if (diff < 0) return ['park'];
-        _take && (c = removeFrom(_c, c));
-        var vals = _c.slice(_c.length - x).reverse();
-        _c = _c.slice(0, _c.length - x);
-        return [vals.length !== 0 ? 'continue' : 'park'].concat(vals);
+            return vals;
+        } : arguments[1];
+        return (function () {
+            var _c = _take ? _take.apply(undefined, c).slice(0, x) : c;
+            _c = taker.apply(undefined, _c);
+            var diff = _c.length - x;
+            if (diff < 0) return ['park'];
+            _take && (c = removeFrom(_c, c));
+            var vals = _c.slice(_c.length - x).reverse();
+            _c = _c.slice(0, _c.length - x);
+            return [vals.length !== 0 ? 'continue' : 'park'].concat(vals);
+        })();
     },
         awake = function awake(run) {
         return each(not(actors, run), function (a) {
@@ -113,8 +121,6 @@ var channel = function channel() {
     };
 };
 
-exports['default'] = channel;
-
 /**
 API
 
@@ -125,15 +131,15 @@ channel.close()
 
 /*
 let x = channel({
-    take: (...vals) => vals.filter(x => typeof x === 'number') // take only numbers
+    take: (...vals) => vals.filter(x => typeof x === 'number') // take only numbers from the channel
     // but can put dates or anything into channel
 }) // create new channel()
 
 // for any value in the channel, pull it and log it
 x.spawn( function* (put, take) {
     while(true){
-        let vals = yield take(10) // if not 10 items available, actor parks, waiting to be signalled again
-        if(vals.length === 10) log(`-------------------taking: ${vals}`)
+        let vals = yield take(1, (...vals) => vals.filter(x => x%2===0)) // if not 10 items available, actor parks, waiting to be signalled again, and also find just evens
+        if(vals.length === 1) log(`-------------------taking: ${vals}`)
     }
 })
 
@@ -161,4 +167,3 @@ x.spawn(function* insertDate(p, t) {
 // close the channel and remove all memory references. Pow! one-line cleanup.
 setTimeout(() => x.close(), 2500)
 */
-module.exports = exports['default'];

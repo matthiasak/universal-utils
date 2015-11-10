@@ -38,9 +38,10 @@ const channel = (options={}) => {
             c = [...vals, ...c]
             return ["park", ...c]
         },
-        take = (x=1) => {
-            let _c = _take ? _take(...c).slice(0,x) : c,
-                diff = _c.length - x
+        take = (x=1, taker=(...vals)=>vals) => {
+            let _c = _take ? _take(...c).slice(0,x) : c
+            _c = taker(..._c)
+            let diff = _c.length - x
             if(diff < 0) return ['park']
             _take && (c = removeFrom(_c, c))
             const vals = _c.slice(_c.length-x).reverse()
@@ -77,8 +78,6 @@ const channel = (options={}) => {
     }
 }
 
-export default channel
-
 /**
 API
 
@@ -89,15 +88,15 @@ channel.close()
 
 /*
 let x = channel({
-    take: (...vals) => vals.filter(x => typeof x === 'number') // take only numbers
+    take: (...vals) => vals.filter(x => typeof x === 'number') // take only numbers from the channel
     // but can put dates or anything into channel
 }) // create new channel()
 
 // for any value in the channel, pull it and log it
 x.spawn( function* (put, take) {
     while(true){
-        let vals = yield take(10) // if not 10 items available, actor parks, waiting to be signalled again
-        if(vals.length === 10) log(`-------------------taking: ${vals}`)
+        let vals = yield take(1, (...vals) => vals.filter(x => x%2===0)) // if not 10 items available, actor parks, waiting to be signalled again, and also find just evens
+        if(vals.length === 1) log(`-------------------taking: ${vals}`)
     }
 })
 
