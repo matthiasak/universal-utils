@@ -26,5 +26,9 @@ var _mux = require('./mux');
 
 var _mux2 = _interopRequireDefault(_mux);
 
-exports['default'] = { cache: _cache2['default'], store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch.batch, fetch: _fetch.fetch, cancellable: _fetch.cancellable, mux: _mux2['default'] };
+var _csp = require('./csp');
+
+var _csp2 = _interopRequireDefault(_csp);
+
+exports['default'] = { cache: _cache2['default'], store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch.batch, fetch: _fetch.fetch, cancellable: _fetch.cancellable, mux: _mux2['default'], channel: _csp2['default'] };
 module.exports = exports['default'];

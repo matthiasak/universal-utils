@@ -4,5 +4,6 @@ import resource from './resource'
 import cache from './cache'
 import router from './router'
 import mux from './mux'
+import channel from './csp'
 
-export default {cache, store, resource, router, batch, fetch, cancellable, mux}
+export default {cache, store, resource, router, batch, fetch, cancellable, mux, channel}
