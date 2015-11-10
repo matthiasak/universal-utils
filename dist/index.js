@@ -4,9 +4,7 @@ exports.__esModule = true;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _fetch2 = require('./fetch');
-
-var _fetch3 = _interopRequireDefault(_fetch2);
+var _fetch = require('./fetch');
 
 var _store = require('./store');
 
@@ -28,9 +26,5 @@ var _mux = require('./mux');
 
 var _mux2 = _interopRequireDefault(_mux);
 
-require('isomorphic-fetch');
-var _fetch = global.fetch;
-var fetch = _fetch3['default'](_fetch);
-
-exports['default'] = { cache: _cache2['default'], fetch: fetch, store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch3['default'], mux: _mux2['default'] };
+exports['default'] = { cache: _cache2['default'], store: _store2['default'], resource: _resource2['default'], router: _router2['default'], batch: _fetch.batch, fetch: _fetch.fetch, cancellable: _fetch.cancellable, mux: _mux2['default'] };
 module.exports = exports['default'];

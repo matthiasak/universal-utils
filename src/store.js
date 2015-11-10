@@ -16,7 +16,7 @@
 //     })
 //     ```
 
-
+import {cancellable} from './fetch'
 const clone = (obj) => JSON.parse(JSON.stringify(obj))
 
 /**
@@ -66,7 +66,8 @@ const store = (state={}) => {
         to: (sub) => subscribers.add(sub),
         remove: (sub) => subscribers.delete(sub)
     }
-    return instance
+
+    return { ...instance, dispatch: cancellable(instance.dispatch) }
 }
 
 export default store

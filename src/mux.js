@@ -1,7 +1,4 @@
-import batch from './fetch'
-require('isomorphic-fetch')
-const _fetch = global.fetch
-const fetch = batch(_fetch)
+import {batch, fetch, cancellable} from './fetch'
 import store from './store'
 
 const debounce = (func, wait, timeout) =>
@@ -62,7 +59,7 @@ const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
         send()
     }
 
-    return (url, options={}) =>
+    const get = (url, options={}) =>
         // add {url,options} to payload
         // resolves to data[index] under assumption the endpoint returns
         // data in order it was requested
@@ -70,6 +67,8 @@ const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
             new Promise(res =>
                 queue(data =>
                     res(data[index]))))
+
+    return cancellable(get)
 }
 
 

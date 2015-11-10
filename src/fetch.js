@@ -49,7 +49,34 @@ const batch = f => {
     }
 }
 
-export default batch
+// a simple wrapper around fetch()
+// that enables a Promise to be cancelled (sort of)
+// --
+// use this until Promise#abort() is a method, or the WHATWG figures
+// out a proper approach/implementation
+require('isomorphic-fetch')
+const cancellable = f =>
+    (...args) => {
+        let result = f(...args),
+            aborted = false
+
+        let promise = new Promise((res,rej) => {
+            result.then(d => {
+                return aborted ? rej('aborted') : res(d)
+            }).catch(e => rej(e))
+        })
+
+        promise.abort = () => aborted = true
+
+        return promise }
+
+const fetch = cancellable(batch(global.fetch))
+
+export {
+    fetch,
+    cancellable,
+    batch
+}
 
 // !! usage
 // let batching_fetcher = batch(fetch) // fetch API from require('isomorphic-fetch')

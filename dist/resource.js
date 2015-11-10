@@ -19,11 +19,6 @@ var _cache2 = _interopRequireDefault(_cache);
 
 var _fetch2 = require('./fetch');
 
-var _fetch3 = _interopRequireDefault(_fetch2);
-
-require('isomorphic-fetch');
-var _fetch = _fetch3['default'](global.fetch);
-
 var resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var defaultState = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
@@ -36,7 +31,7 @@ var resource = function resource() {
     var nocache = config.nocache;
     var name = config.name;
     var cacheDuration = config.cacheDuration;
-    var f = fetch || _fetch;
+    var f = fetch || _fetch2.fetch;
 
     var get = function get(id) {
         for (var _len = arguments.length, params = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
@@ -94,7 +89,7 @@ var resource = function resource() {
         }));
     };
 
-    return { name: name, store: store, get: get };
+    return { name: name, store: store, get: _fetch2.cancellable(get) };
 };
 
 exports['default'] = resource;

@@ -1,12 +1,8 @@
-import batch from './fetch'
+import {batch, fetch, cancellable} from './fetch'
 import store from './store'
 import resource from './resource'
 import cache from './cache'
 import router from './router'
 import mux from './mux'
 
-require('isomorphic-fetch')
-const _fetch = global.fetch
-const fetch = batch(_fetch)
-
-export default {cache, fetch, store, resource, router, batch, mux}
+export default {cache, store, resource, router, batch, fetch, cancellable, mux}

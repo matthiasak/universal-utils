@@ -4,10 +4,7 @@
 
 import {default as s} from './store'
 import cache from './cache'
-import batch from './fetch'
-
-require('isomorphic-fetch')
-const _fetch = batch(global.fetch)
+import {batch, fetch as _fetch, cancellable} from './fetch'
 
 const resource = (config={}, defaultState={}) => {
 
@@ -63,7 +60,7 @@ const resource = (config={}, defaultState={}) => {
             ))
     }
 
-    return { name, store, get }
+    return { name, store, get: cancellable(get) }
 }
 
 export default resource

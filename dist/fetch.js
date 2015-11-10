@@ -60,7 +60,38 @@ var batch = function batch(f) {
     };
 };
 
-exports['default'] = batch;
+// a simple wrapper around fetch()
+// that enables a Promise to be cancelled (sort of)
+// --
+// use this until Promise#abort() is a method, or the WHATWG figures
+// out a proper approach/implementation
+require('isomorphic-fetch');
+var cancellable = function cancellable(f) {
+    return function () {
+        var result = f.apply(undefined, arguments),
+            aborted = false;
+
+        var promise = new Promise(function (res, rej) {
+            result.then(function (d) {
+                return aborted ? rej('aborted') : res(d);
+            })['catch'](function (e) {
+                return rej(e);
+            });
+        });
+
+        promise.abort = function () {
+            return aborted = true;
+        };
+
+        return promise;
+    };
+};
+
+var fetch = cancellable(batch(global.fetch));
+
+exports.fetch = fetch;
+exports.cancellable = cancellable;
+exports.batch = batch;
 
 // !! usage
 // let batching_fetcher = batch(fetch) // fetch API from require('isomorphic-fetch')
@@ -82,4 +113,3 @@ exports['default'] = batch;
 // !! as long as it returns a promise
 //
 // !! by default, POSTs are not batched, whereas GETs are. Clone the repo and modify to your needs.
-module.exports = exports['default'];
