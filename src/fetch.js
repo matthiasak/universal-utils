@@ -17,26 +17,13 @@ const batch = f => {
         let {method} = options,
             key = `${url}:${JSON.stringify(options)}`
 
-        if(method === 'post')
-            return f(url, options)
-                .then(r => r.text())
-                .then(text => {
-                    try { return JSON.parse(text) } catch(e) {
-                        throw `${url} did not return JSON`
-                    }
-                })
-                .then(d => res(d))
+        if((method || '').toLowerCase() === 'post')
+            return f(url, {...options, compress: false})
 
         return inflight[key] ||
             (inflight[key] =
                 new Promise((res,rej) => {
                     f(url, {...options, compress: false})
-                    .then(r => r.text())
-                    .then(text => {
-                        try { return JSON.parse(text) } catch(e) {
-                            throw `${url} did not return JSON`
-                        }
-                    })
                     .then(d => res(d))
                     .catch(e => rej(e))
                 })
@@ -70,9 +57,14 @@ const cancellable = f =>
 
         return promise }
 
-const fetch = cancellable(batch(global.fetch))
+const whatWGFetch = (...args) =>
+    global.fetch(...args)
+        .then(r => r.json())
+
+const fetch = cancellable(batch(whatWGFetch))
 
 export {
+    whatWGFetch,
     fetch,
     cancellable,
     batch

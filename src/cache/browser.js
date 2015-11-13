@@ -3,6 +3,9 @@ const clone = (obj) =>
 
 const storage = require('localforage')
 
+// Force localStorage to be the backend driver.
+storage.setDriver(storage.LOCALSTORAGE)
+
 const cache = () => {
 
     const getItem = (key, expire=false) => {

@@ -23,28 +23,10 @@ var batch = function batch(f) {
         var method = options.method;
         var key = url + ':' + JSON.stringify(options);
 
-        if (method === 'post') return f(url, options).then(function (r) {
-            return r.text();
-        }).then(function (text) {
-            try {
-                return JSON.parse(text);
-            } catch (e) {
-                throw url + ' did not return JSON';
-            }
-        }).then(function (d) {
-            return res(d);
-        });
+        if ((method || '').toLowerCase() === 'post') return f(url, _extends({}, options, { compress: false }));
 
         return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
-            f(url, _extends({}, options, { compress: false })).then(function (r) {
-                return r.text();
-            }).then(function (text) {
-                try {
-                    return JSON.parse(text);
-                } catch (e) {
-                    throw url + ' did not return JSON';
-                }
-            }).then(function (d) {
+            f(url, _extends({}, options, { compress: false })).then(function (d) {
                 return res(d);
             })['catch'](function (e) {
                 return rej(e);
@@ -87,8 +69,15 @@ var cancellable = function cancellable(f) {
     };
 };
 
-var fetch = cancellable(batch(global.fetch));
+var whatWGFetch = function whatWGFetch() {
+    return global.fetch.apply(global, arguments).then(function (r) {
+        return r.json();
+    });
+};
 
+var fetch = cancellable(batch(whatWGFetch));
+
+exports.whatWGFetch = whatWGFetch;
 exports.fetch = fetch;
 exports.cancellable = cancellable;
 exports.batch = batch;

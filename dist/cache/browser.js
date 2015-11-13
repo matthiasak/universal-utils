@@ -7,6 +7,9 @@ var clone = function clone(obj) {
 
 var storage = require('localforage');
 
+// Force localStorage to be the backend driver.
+storage.setDriver(storage.LOCALSTORAGE);
+
 var cache = function cache() {
 
     var getItem = function getItem(key) {
