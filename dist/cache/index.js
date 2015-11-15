@@ -58,6 +58,7 @@ var nodeCache = function nodeCache() {
                         var data = clone(cache[key]),
                             expired = expire || data.expiresAt < +new Date();
                         if (expired) return rej(key + ' is expired');
+                        if (!data.data) return rej(key + ' has no data');
                         return res(data.data);
                     }
                     rej(key + ' not in cache');
@@ -67,6 +68,7 @@ var nodeCache = function nodeCache() {
             var setItem = function setItem(key, val) {
                 var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
 
+                console.log('settoing item', key);
                 var expiresAt = +new Date() + timeout;
                 var data = { expiresAt: expiresAt, data: val };
                 return new Promise(function (res, rej) {

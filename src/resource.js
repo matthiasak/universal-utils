@@ -18,19 +18,15 @@ const resource = (config={}, defaultState={}) => {
 
         // generate a key unique to this request for muxing/batching,
         // if need be (serialized with the options)
-        let _id = id
-        if(_id instanceof Object)
-            _id = Object.keys(_id).sort().map(k => `${k}:${id[k]}`).join(',')
-
-        // console.log('request to:', url(id, ...params), 'with', id, params)
+        let key = name+':'+JSON.stringify(id)+':'+JSON.stringify(params)
 
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
-        return inflight[_id] ||
-            (inflight[_id] = new Promise((res,rej) =>
+        return inflight[key] ||
+            (inflight[key] = new Promise((res,rej) =>
                 (nocache ?
                     Promise.reject() :
-                    cache.getItem(`${name}:${id}`))
+                    cache.getItem(key))
                 .then(d => res(d))
                 .catch(error =>
                     // whatever fetching mechanism is used (batched, muxed, etc)
@@ -41,20 +37,21 @@ const resource = (config={}, defaultState={}) => {
                     // in normal URL requests, we can just carry on as normal
                     f(url(id, ...params), {resourceName: name, id, params})
                     .then(d => {
-                        if(!d) throw `no data returned from ${name}:${id}`
+                        if(!d) throw `no data returned from ${key}`
                         return d
                     })
                     .then(d =>
                         store.dispatch((state, next) => {
-                            let _state = {...state, [id]: d} // make new state
-                            inflight = {...inflight, [_id]: undefined} // clear in-flight promise
-                            !nocache && cache.setItem(`${name}:${id}`, d, cacheDuration)
+                            let _state = {...state, [key]: d} // make new state
+                            inflight = {...inflight, [key]: undefined} // clear in-flight promise
+                            !nocache && cache.setItem(key, d, cacheDuration)
                             next(_state) // store's new state is _state
                         })
-                    .then(state => state[id])) // pipe state[id] to the call to f()
+                        .then(state => state[key])
+                    ) // pipe state[_id] to the call to f()
                     .then(d => res(d)) // resolve the f(url(id))
                     .catch(e => {
-                        inflight = {...inflight, [_id]: undefined} // in case of fire...
+                        inflight = {...inflight, [key]: undefined} // in case of fire...
                         rej(e)
                     }))
             ))

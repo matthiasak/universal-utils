@@ -40,17 +40,12 @@ var resource = function resource() {
 
         // generate a key unique to this request for muxing/batching,
         // if need be (serialized with the options)
-        var _id = id;
-        if (_id instanceof Object) _id = Object.keys(_id).sort().map(function (k) {
-            return k + ':' + id[k];
-        }).join(',');
-
-        // console.log('request to:', url(id, ...params), 'with', id, params)
+        var key = name + ':' + JSON.stringify(id) + ':' + JSON.stringify(params);
 
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
-        return inflight[_id] || (inflight[_id] = new Promise(function (res, rej) {
-            return (nocache ? Promise.reject() : _cache2['default'].getItem(name + ':' + id)).then(function (d) {
+        return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
+            return (nocache ? Promise.reject() : _cache2['default'].getItem(key)).then(function (d) {
                 return res(d);
             })['catch'](function (error) {
                 return(
@@ -61,27 +56,27 @@ var resource = function resource() {
                     //
                     // in normal URL requests, we can just carry on as normal
                     f(url.apply(undefined, [id].concat(params)), { resourceName: name, id: id, params: params }).then(function (d) {
-                        if (!d) throw 'no data returned from ' + name + ':' + id;
+                        if (!d) throw 'no data returned from ' + key;
                         return d;
                     }).then(function (d) {
                         return store.dispatch(function (state, next) {
                             var _extends2, _extends3;
 
-                            var _state = _extends({}, state, (_extends2 = {}, _extends2[id] = d, _extends2)); // make new state
-                            inflight = _extends({}, inflight, (_extends3 = {}, _extends3[_id] = undefined, _extends3)); // clear in-flight promise
-                            !nocache && _cache2['default'].setItem(name + ':' + id, d, cacheDuration);
+                            var _state = _extends({}, state, (_extends2 = {}, _extends2[key] = d, _extends2)); // make new state
+                            inflight = _extends({}, inflight, (_extends3 = {}, _extends3[key] = undefined, _extends3)); // clear in-flight promise
+                            !nocache && _cache2['default'].setItem(key, d, cacheDuration);
                             next(_state); // store's new state is _state
                         }).then(function (state) {
-                            return state[id];
+                            return state[key];
                         });
-                    }) // pipe state[id] to the call to f()
+                    }) // pipe state[_id] to the call to f()
                     .then(function (d) {
                         return res(d);
                     }) // resolve the f(url(id))
                     ['catch'](function (e) {
                         var _extends4;
 
-                        inflight = _extends({}, inflight, (_extends4 = {}, _extends4[_id] = undefined, _extends4)); // in case of fire...
+                        inflight = _extends({}, inflight, (_extends4 = {}, _extends4[key] = undefined, _extends4)); // in case of fire...
                         rej(e);
                     })
                 );

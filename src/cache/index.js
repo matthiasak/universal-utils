@@ -44,6 +44,7 @@ const nodeCache = () => {
                     let data = clone(cache[key]),
                         expired = expire || (data.expiresAt < +new Date)
                     if(expired) return rej(`${key} is expired`)
+                    if(!data.data) return rej(`${key} has no data`)
                     return res(data.data)
                 }
                 rej(`${key} not in cache`)
@@ -51,6 +52,7 @@ const nodeCache = () => {
         }
 
         const setItem = (key, val, timeout=5*60*60*1000) => {
+            console.log('settoing item', key)
             const expiresAt = +new Date + timeout
             let data = {expiresAt, data: val}
             return new Promise((res,rej) => {
