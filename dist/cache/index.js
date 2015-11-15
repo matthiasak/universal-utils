@@ -68,7 +68,6 @@ var nodeCache = function nodeCache() {
             var setItem = function setItem(key, val) {
                 var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
 
-                console.log('settoing item', key);
                 var expiresAt = +new Date() + timeout;
                 var data = { expiresAt: expiresAt, data: val };
                 return new Promise(function (res, rej) {

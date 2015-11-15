@@ -52,7 +52,6 @@ const nodeCache = () => {
         }
 
         const setItem = (key, val, timeout=5*60*60*1000) => {
-            console.log('settoing item', key)
             const expiresAt = +new Date + timeout
             let data = {expiresAt, data: val}
             return new Promise((res,rej) => {
