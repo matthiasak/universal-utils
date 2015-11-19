@@ -1,13 +1,11 @@
-// The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`),
-// exposing one primary method `get()`. Example code at end of file.
-
 'use strict';
 
-exports.__esModule = true;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`),
+// exposing one primary method `get()`. Example code at end of file.
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 var _store = require('./store');
 
@@ -19,13 +17,17 @@ var _cache2 = _interopRequireDefault(_cache);
 
 var _fetch2 = require('./fetch');
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var defaultState = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     var inflight = {};
 
-    var store = _store2['default'](defaultState);
+    var store = (0, _store2.default)(defaultState);
     var url = config.url;
     var fetch = config.fetch;
     var nocache = config.nocache;
@@ -45,9 +47,9 @@ var resource = function resource() {
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
         return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
-            return (nocache ? Promise.reject() : _cache2['default'].getItem(key)).then(function (d) {
+            return (nocache ? Promise.reject() : _cache2.default.getItem(key)).then(function (d) {
                 return res(d);
-            })['catch'](function (error) {
+            }).catch(function (error) {
                 return(
                     // whatever fetching mechanism is used (batched, muxed, etc)
                     // send the resourceName, id, params with the request as options.
@@ -60,11 +62,9 @@ var resource = function resource() {
                         return d;
                     }).then(function (d) {
                         return store.dispatch(function (state, next) {
-                            var _extends2, _extends3;
-
-                            var _state = _extends({}, state, (_extends2 = {}, _extends2[key] = d, _extends2)); // make new state
-                            inflight = _extends({}, inflight, (_extends3 = {}, _extends3[key] = undefined, _extends3)); // clear in-flight promise
-                            !nocache && _cache2['default'].setItem(key, d, cacheDuration);
+                            var _state = _extends({}, state, _defineProperty({}, key, d)); // make new state
+                            inflight = _extends({}, inflight, _defineProperty({}, key, undefined)); // clear in-flight promise
+                            !nocache && _cache2.default.setItem(key, d, cacheDuration);
                             next(_state); // store's new state is _state
                         }).then(function (state) {
                             return state[key];
@@ -73,10 +73,8 @@ var resource = function resource() {
                     .then(function (d) {
                         return res(d);
                     }) // resolve the f(url(id))
-                    ['catch'](function (e) {
-                        var _extends4;
-
-                        inflight = _extends({}, inflight, (_extends4 = {}, _extends4[key] = undefined, _extends4)); // in case of fire...
+                    .catch(function (e) {
+                        inflight = _extends({}, inflight, _defineProperty({}, key, undefined)); // in case of fire...
                         rej(e);
                     })
                 );
@@ -84,10 +82,10 @@ var resource = function resource() {
         }));
     };
 
-    return { name: name, store: store, get: _fetch2.cancellable(get) };
+    return { name: name, store: store, get: (0, _fetch2.cancellable)(get) };
 };
 
-exports['default'] = resource;
+exports.default = resource;
 
 // !! Example usage
 //
@@ -116,4 +114,3 @@ exports['default'] = resource;
 // RESOURCES.LOCATION.get('Houston', 'TX', 77006).then(price => ... draw some React component?)
 // !! all of the above are separate requests, but they are sent as A SINGLE REQUEST to /mux in the browser, and sent to the actual API in node
 // !! you can also choose to have the browser AND node send mux'ed requests by making the fetch() just be isomorphic fetch, if the node server isn't the API server and your API sever supports it
-module.exports = exports['default'];

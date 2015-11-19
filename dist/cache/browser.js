@@ -1,6 +1,8 @@
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 var clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
@@ -35,7 +37,7 @@ var cache = function cache() {
 };
 
 var c = cache();
-exports['default'] = c;
+exports.default = c;
 
 // ---- extra config options ----
 // window.storage = storage
@@ -44,4 +46,3 @@ exports['default'] = c;
 //     // driver: storage.LOCALSTORAGE,
 //     name: 'rentvillas'
 // })
-module.exports = exports['default'];

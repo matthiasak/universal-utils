@@ -1,3 +1,13 @@
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 /*
 The `fetch()` module batches in-flight requests, so if at any point in time, anywhere in my front-end or back-end application I have a calls occur to `fetch('http://api.github.com/users/matthiasak')` while another to that URL is "in-flight", the Promise returned by both of those calls will be resolved by a single network request.
 */
@@ -9,12 +19,6 @@ The `fetch()` module batches in-flight requests, so if at any point in time, any
  *
  * f: function(url,options): Promise
  */
-'use strict';
-
-exports.__esModule = true;
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var batch = function batch(f) {
     var inflight = {};
 
@@ -28,15 +32,13 @@ var batch = function batch(f) {
         return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
             f(url, _extends({}, options, { compress: false })).then(function (d) {
                 return res(d);
-            })['catch'](function (e) {
+            }).catch(function (e) {
                 return rej(e);
             });
         }).then(function (data) {
-            var _extends2;
-
-            inflight = _extends({}, inflight, (_extends2 = {}, _extends2[key] = undefined, _extends2));
+            inflight = _extends({}, inflight, _defineProperty({}, key, undefined));
             return data;
-        })['catch'](function (e) {
+        }).catch(function (e) {
             return console.error(e, url);
         }));
     };
@@ -56,7 +58,7 @@ var cancellable = function cancellable(f) {
         var promise = new Promise(function (res, rej) {
             result.then(function (d) {
                 return aborted ? rej('aborted') : res(d);
-            })['catch'](function (e) {
+            }).catch(function (e) {
                 return rej(e);
             });
         });
@@ -70,7 +72,9 @@ var cancellable = function cancellable(f) {
 };
 
 var whatWGFetch = function whatWGFetch() {
-    return global.fetch.apply(global, arguments).then(function (r) {
+    var _global;
+
+    return (_global = global).fetch.apply(_global, arguments).then(function (r) {
         return r.json();
     });
 };

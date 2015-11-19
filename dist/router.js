@@ -1,12 +1,16 @@
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 // The `router()` module is a simple client-side `hashchange` event router that allows Single Page Apps to effectively map and listen to route changes. For `router()` implementation examples, see the `router.js` file.
 //
 // Example usage at end of this file.
-
-'use strict';
-
-exports.__esModule = true;
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var router = function router(routes, routeTransform) {
     var hashroutes = Object.keys(routes).map(function (route) {
@@ -69,7 +73,7 @@ var router = function router(routes, routeTransform) {
                 indices++;
             }
 
-            return _extends({}, a, (_extends2 = {}, _extends2[mappedSegment] = v, _extends2.indices = indices, _extends2));
+            return _extends({}, a, (_extends2 = {}, _defineProperty(_extends2, mappedSegment, v), _defineProperty(_extends2, 'indices', indices), _extends2));
         }, { indices: 0 });
 
         handler(routeCtx);
@@ -83,7 +87,7 @@ var router = function router(routes, routeTransform) {
     return { page: page };
 };
 
-exports['default'] = router;
+exports.default = router;
 
 /**
  * EXAMPLE USAGE
@@ -118,4 +122,3 @@ exports['default'] = router;
 // start the routing
 // -------------------------------------
 // const myRoutes = router(routes, routeTransform)
-module.exports = exports['default'];

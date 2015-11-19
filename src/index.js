@@ -7,4 +7,4 @@ import mux from './mux'
 import channel from './csp'
 import * as fp from './fp'
 
-export default {cache, store, resource, router, batch, fetch, cancellable, mux, channel, fp}
+module.exports = {cache, store, resource, router, batch, fetch, cancellable, mux, channel, fp}

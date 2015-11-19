@@ -1,48 +1,52 @@
-/**
- * Welcome to CSP in JS!
- *
- * This is an implementation of Go-style coroutines that access a hidden,
- * shared channel for putting data into, and taking it out of, a system.
- *
- * Channels, in this case, can be a set (for unique values), an array
- * (as a stack or a queue), or even some kind of persistent data structure.
- *
- * CSP (especially in functional platforms like ClojureScript, where the
- * `core.async` library provides asynchronous, immutable data-structures)
- * typically operates through two operations (overly simplified here):
- *
- * (1) put(...a) : put a list of items into the channel
- * (2) take(x) : take x items from the channel
- *
- * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
- * can return more than one value, and pause after each value yielded.
- *
- *
- */
-
-/**
- * Welcome to CSP in JS!
- *
- * This is an implementation of Go-style coroutines that access a hidden,
- * shared channel for putting data into, and taking it out of, a system.
- *
- * Channels, in this case, can be a set (for unique values), an array
- * (as a stack or a queue), or even some kind of persistent data structure.
- *
- * CSP (especially in functional platforms like ClojureScript, where the
- * `core.async` library provides asynchronous, immutable data-structures)
- * typically operates through two operations (overly simplified here):
- *
- * (1) put(...a) : put a list of items into the channel
- * (2) take(x) : take x items from the channel
- *
- * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
- * can return more than one value, and pause after each value yielded.
- *
- *
- */
-
 'use strict';
+
+function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+/**
+ * Welcome to CSP in JS!
+ *
+ * This is an implementation of Go-style coroutines that access a hidden,
+ * shared channel for putting data into, and taking it out of, a system.
+ *
+ * Channels, in this case, can be a set (for unique values), an array
+ * (as a stack or a queue), or even some kind of persistent data structure.
+ *
+ * CSP (especially in functional platforms like ClojureScript, where the
+ * `core.async` library provides asynchronous, immutable data-structures)
+ * typically operates through two operations (overly simplified here):
+ *
+ * (1) put(...a) : put a list of items into the channel
+ * (2) take(x) : take x items from the channel
+ *
+ * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
+ * can return more than one value, and pause after each value yielded.
+ *
+ *
+ */
+
+/**
+ * Welcome to CSP in JS!
+ *
+ * This is an implementation of Go-style coroutines that access a hidden,
+ * shared channel for putting data into, and taking it out of, a system.
+ *
+ * Channels, in this case, can be a set (for unique values), an array
+ * (as a stack or a queue), or even some kind of persistent data structure.
+ *
+ * CSP (especially in functional platforms like ClojureScript, where the
+ * `core.async` library provides asynchronous, immutable data-structures)
+ * typically operates through two operations (overly simplified here):
+ *
+ * (1) put(...a) : put a list of items into the channel
+ * (2) take(x) : take x items from the channel
+ *
+ * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
+ * can return more than one value, and pause after each value yielded.
+ *
+ *
+ */
 
 var raf = function raf(cb) {
     return requestAnimationFrame ? requestAnimationFrame(cb) : setTimeout(cb, 0);
@@ -63,7 +67,7 @@ var channel = function channel() {
     },
         removeFrom = function removeFrom(a, b) {
         return b.reduce(function (acc, v) {
-            return a.indexOf(v) === -1 ? [].concat(acc, [v]) : acc;
+            return a.indexOf(v) === -1 ? [].concat(_toConsumableArray(acc), [v]) : acc;
         }, []);
     };
 
@@ -72,8 +76,8 @@ var channel = function channel() {
             vals[_key] = arguments[_key];
         }
 
-        c = [].concat(vals, c);
-        return ["park"].concat(c);
+        c = [].concat(vals, _toConsumableArray(c));
+        return ["park"].concat(_toConsumableArray(c));
     },
         take = function take() {
         var x = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
@@ -84,14 +88,13 @@ var channel = function channel() {
 
             return vals;
         } : arguments[1];
-        return (function () {
-            c = taker.apply(undefined, c);
-            var diff = c.length - x;
-            if (diff < 0) return ['park'];
-            var vals = c.slice(c.length - x).reverse();
-            c = c.slice(0, c.length - x);
-            return [vals.length !== 0 ? 'continue' : 'park'].concat(vals);
-        })();
+
+        c = taker.apply(undefined, _toConsumableArray(c));
+        var diff = c.length - x;
+        if (diff < 0) return ['park'];
+        var vals = c.slice(c.length - x).reverse();
+        c = c.slice(0, c.length - x);
+        return [vals.length !== 0 ? 'continue' : 'park'].concat(_toConsumableArray(vals));
     },
         awake = function awake(run) {
         return each(not(actors, run), function (a) {
@@ -112,9 +115,11 @@ var channel = function channel() {
 
             var _status = status(iter.next(prev), run);
 
-            var state = _status[0];
+            var _status2 = _toArray(_status);
 
-            var vals = _status.slice(1);
+            var state = _status2[0];
+
+            var vals = _status2.slice(1);
 
             prev = vals;
             raf(state === 'continue' ? run : cb);
@@ -124,7 +129,7 @@ var channel = function channel() {
     },
         spawn = function spawn(gen) {
         var _actor = actor(gen(put, take));
-        actors = [].concat(actors, [_actor]);
+        actors = [].concat(_toConsumableArray(actors), [_actor]);
         _actor();
     };
 

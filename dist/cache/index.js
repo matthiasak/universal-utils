@@ -1,6 +1,11 @@
 'use strict';
 
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
+
 var clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
@@ -46,7 +51,7 @@ var nodeCache = function nodeCache() {
             };
         })();
 
-        if (typeof _ret === 'object') return _ret.v;
+        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
     } else {
         var _ret2 = (function () {
 
@@ -81,10 +86,9 @@ var nodeCache = function nodeCache() {
             };
         })();
 
-        if (typeof _ret2 === 'object') return _ret2.v;
+        if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
     }
 };
 
 var c = nodeCache();
-exports['default'] = c;
-module.exports = exports['default'];
+exports.default = c;

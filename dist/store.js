@@ -1,4 +1,6 @@
-// The `store()` module is a mechanism to store an immutable object that represents state of an application. Any application may have one or more active stores, so there's no limitation from how you use the data. The store itself provides four methods: `state()`, `dispatch(reducer, state)`, `to(cb)`, `remove(cb)`.
+'use strict';
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // The `store()` module is a mechanism to store an immutable object that represents state of an application. Any application may have one or more active stores, so there's no limitation from how you use the data. The store itself provides four methods: `state()`, `dispatch(reducer, state)`, `to(cb)`, `remove(cb)`.
 //
 // 1. The `store.state()` returns a clone of the internal state object, which is simply a pure copy of JSON of the data. Since this uses pure JSON representation in-lieue of actual Tries and immutable data libraries, this keeps the code footprint tiny, but you can only store pure JSON data in the store.
 // 2. The `store.to(cb)` will register `cb` as a callback function, invoking `cb(nextState)` whenever the store's state is updated with `store.dispatch()` (`store.remove(cb)` simply does the opposite, removing the callback from the list of event listeners).
@@ -16,11 +18,9 @@
 //     })
 //     ```
 
-'use strict';
-
-exports.__esModule = true;
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
 
 var _fetch = require('./fetch');
 
@@ -71,22 +71,31 @@ var store = function store() {
             return new Promise(function (res, rej) {
                 var next = function next(newState) {
                     _state2 = clone(newState);
-                    for (var _iterator = subscribers, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                        var _ref;
+                    var _iteratorNormalCompletion = true;
+                    var _didIteratorError = false;
+                    var _iteratorError = undefined;
 
-                        if (_isArray) {
-                            if (_i >= _iterator.length) break;
-                            _ref = _iterator[_i++];
-                        } else {
-                            _i = _iterator.next();
-                            if (_i.done) break;
-                            _ref = _i.value;
+                    try {
+                        for (var _iterator = subscribers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                            var s = _step.value;
+
+                            s(clone(_state2));
                         }
-
-                        var s = _ref;
-
-                        s(clone(_state2));
+                    } catch (err) {
+                        _didIteratorError = true;
+                        _iteratorError = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion && _iterator.return) {
+                                _iterator.return();
+                            }
+                        } finally {
+                            if (_didIteratorError) {
+                                throw _iteratorError;
+                            }
+                        }
                     }
+
                     res(clone(_state2));
                 };
                 reducer(_state, next);
@@ -96,14 +105,14 @@ var store = function store() {
             return subscribers.add(sub);
         },
         remove: function remove(sub) {
-            return subscribers['delete'](sub);
+            return subscribers.delete(sub);
         }
     };
 
-    return _extends({}, instance, { dispatch: _fetch.cancellable(instance.dispatch) });
+    return _extends({}, instance, { dispatch: (0, _fetch.cancellable)(instance.dispatch) });
 };
 
-exports['default'] = store;
+exports.default = store;
 
 /*
 // Example usage:
@@ -140,4 +149,3 @@ let componentWillUnmount = () => {
     photos.remove(update)
 }
 */
-module.exports = exports['default'];
