@@ -21,20 +21,6 @@ Small functional problem-solving, event, state-management, and caching utilities
 2. this package is compiled to es5, so you don't need to worry about the Babel require hook, or anything of the sort... just do...
 3. `import {cache, fetch, store, resource, router, batch, mux} from 'universal-utils'` to use this package in server or client-side
 
-#### Changelog
-
-- Nov 10, 2015
-    - added `channel()` CSP implementation
-- Nov 8, 2015
-    - added notes to README, the [What and What](#what-and-why) and [How to learn this library](#how-to-learn-this-library) sections
-    - added `mux` implementation and `router` implementation
-    - numerous bug fixes for the resource
-    - numerous speed and other enhancements for the various libs
-- Nov 1, 2015
-    - updates to build system, precompiled to es5
-- Oct 22, 2015
-    - project started
-
 #### Who?
 
 Matthew Keas, [@matthiasak](https://twitter.com/@matthiasak)
