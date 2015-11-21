@@ -1,30 +1,12 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
 function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-/**
- * Welcome to CSP in JS!
- *
- * This is an implementation of Go-style coroutines that access a hidden,
- * shared channel for putting data into, and taking it out of, a system.
- *
- * Channels, in this case, can be a set (for unique values), an array
- * (as a stack or a queue), or even some kind of persistent data structure.
- *
- * CSP (especially in functional platforms like ClojureScript, where the
- * `core.async` library provides asynchronous, immutable data-structures)
- * typically operates through two operations (overly simplified here):
- *
- * (1) put(...a) : put a list of items into the channel
- * (2) take(x) : take x items from the channel
- *
- * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
- * can return more than one value, and pause after each value yielded.
- *
- *
- */
 
 /**
  * Welcome to CSP in JS!
@@ -52,7 +34,7 @@ var raf = function raf(cb) {
     return requestAnimationFrame ? requestAnimationFrame(cb) : setTimeout(cb, 0);
 };
 
-var channel = function channel() {
+var channel = exports.channel = function channel() {
     var c = [],
         channel_closed = false,
         actors = [];
@@ -188,3 +170,73 @@ x.spawn(function* insertDate(p, t) {
 // close the channel and remove all memory references. Pow! one-line cleanup.
 setTimeout(() => x.close(), 2500)
 */
+
+var fromEvent = exports.fromEvent = function fromEvent(obj, events) {
+    var c = arguments.length <= 2 || arguments[2] === undefined ? channel() : arguments[2];
+    var fn = arguments.length <= 3 || arguments[3] === undefined ? function (e) {
+        return e;
+    } : arguments[3];
+
+    if (!obj.addEventListener) return;
+    if (!(typeof events === 'string') || events.length) return;
+    events = events.split(',').map(function (x) {
+        return x.trim();
+    }).forEach(function (x) {
+        obj.addEventListener(x, function (e) {
+            c.spawn(regeneratorRuntime.mark(function _callee(put, take) {
+                return regeneratorRuntime.wrap(function _callee$(_context) {
+                    while (1) {
+                        switch (_context.prev = _context.next) {
+                            case 0:
+                                _context.next = 2;
+                                return put(fn(e));
+
+                            case 2:
+                            case 'end':
+                                return _context.stop();
+                        }
+                    }
+                }, _callee, this);
+            }));
+        });
+    });
+    return c;
+};
+
+/*
+let c1 = fromEvent(document.body, 'mousemove')
+c1.spawn(function* (p,t){
+    while(true) log(yield t(1))
+})
+*/
+
+var conj = exports.conj = function conj() {
+    for (var _len3 = arguments.length, channels = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+        channels[_key3] = arguments[_key3];
+    }
+
+    var x = channel(),
+        send = function send(val) {
+        return regeneratorRuntime.mark(function _callee2(put, take) {
+            return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                while (1) {
+                    switch (_context2.prev = _context2.next) {
+                        case 0:
+                            _context2.next = 2;
+                            return put(val);
+
+                        case 2:
+                        case 'end':
+                            return _context2.stop();
+                    }
+                }
+            }, _callee2, this);
+        });
+    };
+
+    channels.forEach(function (x) {
+        return x.to(send);
+    });
+
+    return x;
+};
