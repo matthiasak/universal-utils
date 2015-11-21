@@ -20,31 +20,9 @@
  *
  */
 
-/**
- * Welcome to CSP in JS!
- *
- * This is an implementation of Go-style coroutines that access a hidden,
- * shared channel for putting data into, and taking it out of, a system.
- *
- * Channels, in this case, can be a set (for unique values), an array
- * (as a stack or a queue), or even some kind of persistent data structure.
- *
- * CSP (especially in functional platforms like ClojureScript, where the
- * `core.async` library provides asynchronous, immutable data-structures)
- * typically operates through two operations (overly simplified here):
- *
- * (1) put(...a) : put a list of items into the channel
- * (2) take(x) : take x items from the channel
- *
- * This implementation uses ES6 generators (and other ES6 features), which are basically functions that
- * can return more than one value, and pause after each value yielded.
- *
- *
- */
-
 const raf = cb => requestAnimationFrame ? requestAnimationFrame(cb) : setTimeout(cb,0)
 
-const channel = () => {
+export const channel = () => {
     let c = [],
         channel_closed = false,
         actors = []
@@ -143,3 +121,37 @@ x.spawn(function* insertDate(p, t) {
 // close the channel and remove all memory references. Pow! one-line cleanup.
 setTimeout(() => x.close(), 2500)
 */
+
+export const fromEvent = (obj, events, c=channel(), fn=e=>e) => {
+    if(!obj.addEventListener) return
+    if(!(typeof events === 'string') || events.length) return
+    events = events.split(',').map(x => x.trim()).forEach(x => {
+        obj.addEventListener(x, e => {
+            c.spawn(function* (put, take){
+                yield put(fn(e))
+            })
+        })
+    })
+    return c
+}
+
+/*
+let c1 = fromEvent(document.body, 'mousemove')
+c1.spawn(function* (p,t){
+    while(true) log(yield t(1))
+})
+*/
+
+export const conj = (...channels) => {
+    const x = channel(),
+        send = val => {
+            return function* (put,take){
+                yield put(val)
+            }
+        }
+
+    channels.forEach(x => x.to(send))
+
+    return x
+}
+
