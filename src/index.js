@@ -5,6 +5,7 @@ import cache from './cache'
 import router from './router'
 import mux from './mux'
 import channel from './csp'
+import {m, html, mount, render, update, qs} from './vdom'
 import * as fp from './fp'
 
-module.exports = {cache, store, resource, router, batch, fetch, cancellable, mux, channel, fp}
+module.exports = {cache, store, resource, router, batch, fetch, cancellable, mux, channel, fp, m, html, mount, render, update, qs}

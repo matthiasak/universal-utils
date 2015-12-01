@@ -52,6 +52,8 @@ Since each file in this library is an abstraction of some sort, I will address t
 7. [resource.js](src/resource.js) - learn how to wrap a store, muxer, fetcher, cache, and other configurations into a universal wrapper that can automatically keep cached API requests in both the client or server.
 8. [router.js](src/router.js) - The only non-universal piece of code in this repo... this is a simple routing library that can be used in lieue of larger, more verbose libraries and implementations out there like page.js or Backbone's `Backbone.Router()`.
 9. [csp.js](src/csp.js) - learn how to use a simple `channel()` implementation for using simple go-like coroutines that can `put()` and `take()` values into and out of the channel.
+10. [fp.js](src/fp.js) - learn about some more functional-esque approaches to problem solving, including the use transducers
+11. [vdom.js](src/vdom.js) - learn about an ultra tiny, minimal weight and shallow API VDOM implementation (currently Work In Progress)
 
 #### License
 
