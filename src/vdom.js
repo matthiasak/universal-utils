@@ -136,22 +136,22 @@ export const mount = (fn, el) => {
     mounts.set(el, fn)
 }
 
-const debounce = (func, wait) => {
-    let timeout = null,
-        calls = 0,
-        memo = (func, ...args) => {
-            timeout = null
-            func(...args)
-        }
-    return (...args) => {
-        clearTimeout(timeout)
-        timeout = setTimeout(memo.bind(null, func, ...args), wait)
-    }
-}
+// const debounce = (func, wait) => {
+//     let timeout = null,
+//         calls = 0,
+//         memo = (func, ...args) => {
+//             timeout = null
+//             func(...args)
+//         }
+//     return (...args) => {
+//         clearTimeout(timeout)
+//         timeout = setTimeout(memo.bind(null, func, ...args), wait)
+//     }
+// }
 
-const render = debounce((vdom, el) => {
-    rAF(() => simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el))
-}, 16)
+const render = //debounce(
+    (vdom, el) => rAF(() => simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el))}
+    //, 16)
 
 export const update = () => {
     for(let [el,fn] of mounts.entries()){
