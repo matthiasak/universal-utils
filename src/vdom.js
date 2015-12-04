@@ -124,9 +124,10 @@ export const html = vdom => {
 }
 
 const rAF =
-      requestAnimationFrame ||
+      global.document &&
+      (requestAnimationFrame ||
       webkitRequestAnimationFrame ||
-      mozRequestAnimationFrame ||
+      mozRequestAnimationFrame) ||
       ((cb) => setTimeout(cb, 16.6))
 
 const mounts = new Map()

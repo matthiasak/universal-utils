@@ -153,7 +153,7 @@ var html = exports.html = function html(vdom) {
     return '<' + tag + ' ' + id + ' ' + _class + ' ' + _attrs + ' ' + (!children ? '/' : '') + '>' + closing;
 };
 
-var rAF = requestAnimationFrame || webkitRequestAnimationFrame || mozRequestAnimationFrame || function (cb) {
+var rAF = global.document && (requestAnimationFrame || webkitRequestAnimationFrame || mozRequestAnimationFrame) || function (cb) {
     return setTimeout(cb, 16.6);
 };
 
