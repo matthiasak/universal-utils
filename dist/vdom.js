@@ -164,32 +164,26 @@ var mount = exports.mount = function mount(fn, el) {
     mounts.set(el, fn);
 };
 
-var debounce = function debounce(func, wait) {
-    var timeout = null,
-        calls = 0,
-        memo = function memo(func) {
-        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
-            args[_key2 - 1] = arguments[_key2];
-        }
+// const debounce = (func, wait) => {
+//     let timeout = null,
+//         calls = 0,
+//         memo = (func, ...args) => {
+//             timeout = null
+//             func(...args)
+//         }
+//     return (...args) => {
+//         clearTimeout(timeout)
+//         timeout = setTimeout(memo.bind(null, func, ...args), wait)
+//     }
+// }
 
-        timeout = null;
-        func.apply(undefined, args);
-    };
-    return function () {
-        for (var _len3 = arguments.length, args = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-            args[_key3] = arguments[_key3];
-        }
-
-        clearTimeout(timeout);
-        timeout = setTimeout(memo.bind.apply(memo, [null, func].concat(args)), wait);
-    };
-};
-
-var render = debounce(function (vdom, el) {
-    rAF(function () {
+var render = //debounce(
+function render(vdom, el) {
+    return rAF(function () {
         return simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el);
     });
-}, 16);
+};
+//}, 16)
 
 var update = exports.update = function update() {
     var _iteratorNormalCompletion = true;

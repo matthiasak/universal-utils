@@ -150,8 +150,8 @@ export const mount = (fn, el) => {
 // }
 
 const render = //debounce(
-    (vdom, el) => rAF(() => simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el))}
-    //, 16)
+    (vdom, el) => rAF(() => simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el))
+    //}, 16)
 
 export const update = () => {
     for(let [el,fn] of mounts.entries()){
