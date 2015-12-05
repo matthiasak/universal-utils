@@ -47,6 +47,12 @@ var pool = function pool() {
     return { get: get, recycle: recycle };
 };
 
+var log = function log() {
+    var _console;
+
+    return (_console = console).log.apply(_console, arguments);
+};
+
 var POOL = pool();
 
 var simpleRenderingMode = false;
@@ -62,15 +68,16 @@ var class_id_regex = function class_id_regex() {
 
 var parseSelector = function parseSelector(s) {
     var test = null,
-        tag = tagName_regex().exec(s).slice(1)[0],
+        tagreg = tagName_regex().exec(s),
+        tag = tagreg && tagreg.slice(1)[0],
         reg = class_id_regex(),
         vdom = POOL.get();
 
-    vdom.tag = tag || '';
+    if (tag) s = s.substr(tag.length);
     vdom.classes = [];
     vdom.ids = [];
+    vdom.tag = tag || 'div';
 
-    if (tag) s = s.substr(tag.length);
     while ((test = reg.exec(s)) !== null) {
         test = test[0];
         if (test[0] === '.') vdom.classes.push(test.substr(1));else if (test[0] === '#') vdom.ids.push(test.substr(1));
@@ -85,7 +92,7 @@ var m = exports.m = function m(selector) {
 
     var attrs = arguments.length <= 1 || arguments[1] === undefined ? POOL.get() : arguments[1];
 
-    if (attrs.tag || !(attrs instanceof Object) || attrs instanceof Array) {
+    if (attrs.tag || !(attrs instanceof Object) || attrs instanceof Array || attrs instanceof Function) {
         if (attrs instanceof Array) children.unshift.apply(children, _toConsumableArray(attrs));else children.unshift(attrs);
         attrs = POOL.get();
     }
@@ -160,30 +167,15 @@ var rAF = global.document && (requestAnimationFrame || webkitRequestAnimationFra
 var mounts = new Map();
 
 var mount = exports.mount = function mount(fn, el) {
-    render(fn(), el);
     mounts.set(el, fn);
+    render(fn, el);
 };
 
-// const debounce = (func, wait) => {
-//     let timeout = null,
-//         calls = 0,
-//         memo = (func, ...args) => {
-//             timeout = null
-//             func(...args)
-//         }
-//     return (...args) => {
-//         clearTimeout(timeout)
-//         timeout = setTimeout(memo.bind(null, func, ...args), wait)
-//     }
-// }
-
-var render = //debounce(
-function render(vdom, el) {
+var render = function render(fn, el) {
     return rAF(function () {
-        return simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el);
+        return simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el);
     });
 };
-//}, 16)
 
 var update = exports.update = function update() {
     var _iteratorNormalCompletion = true;
@@ -197,7 +189,7 @@ var update = exports.update = function update() {
             var el = _step$value[0];
             var fn = _step$value[1];
 
-            render(fn(), el);
+            render(fn, el);
         }
     } catch (err) {
         _didIteratorError = true;
@@ -219,6 +211,7 @@ var createTag = function createTag() {
     var vdom = arguments.length <= 0 || arguments[0] === undefined ? POOL.get() : arguments[0];
 
     if (!(vdom instanceof Object)) return document.createTextNode(vdom);
+
     var tag = vdom.tag;
     var attrs = vdom.attrs;
     var ids = vdom.ids;
@@ -228,35 +221,36 @@ var createTag = function createTag() {
 
     applyEvents(events, x);
     attrs && Object.keys(attrs).forEach(function (attr) {
-        return x.setAttribute(attr, attrs[attr]);
+        return x[attr] = attrs[attr];
     });
-    x.id = ids ? ids.join(' ') : '';
-    x.className = classes ? classes.join(' ') : '';
+    x.id = (ids ? ids : []).concat(attrs.id || '').join(' ');
+    x.className = (classes ? classes : []).concat(attrs.className || '').join(' ');
+
     return x;
 };
 
-var simpleApply = function simpleApply(vdom, el) {
-    return el.innerHTML = html(vdom);
+var simpleApply = function simpleApply(fn, el) {
+    return el.innerHTML = html(fn());
 };
 
 var applyUpdates = function applyUpdates(vdom, el) {
-    if (!vdom) {
-        el && el.parentElement && el.parentElement.removeChild(el);
-        return;
-    }
+    if (!vdom) return;
 
-    var __el = el && el.children,
+    while (vdom instanceof Function) {
+        vdom = vdom();
+    }var __el = el && el.children,
         __v = vdom && vdom.children;
 
     if (vdom instanceof Array) {
         __v = vdom;
     } else if (vdom instanceof Object && vdom.tag) {
-        if (!el || el.tagName !== vdom.tag) {
+        if (el.tagName !== vdom.tag) {
             var t = createTag(vdom);
-            // t.innerHTML = html(vdom.children)
             el.parentElement.insertBefore(t, el);
             el.parentElement.removeChild(el);
-            return applyUpdates(__v, t);
+            applyUpdates(__v, t);
+            vdom.config && vdom.config(t, false);
+            return;
         }
     } else {
         var t = document.createTextNode(vdom);
@@ -270,13 +264,28 @@ var applyUpdates = function applyUpdates(vdom, el) {
         var v = __v[i],
             d = __el[i];
 
+        if (v instanceof Function) {
+            v = v();
+        }
+
         if (v && d) {
             applyUpdates(v, d);
+            v.config && v.config(d, true);
         } else if (v && !d) {
-            var t = createTag(v);
-            applyUpdates(v.children, t);
-            el.appendChild(t);
-        } else if (!vdom && d) {
+            if (v instanceof Array) {
+                v.forEach(function (v) {
+                    var t = createTag(v);
+                    el.appendChild(t);
+                    applyUpdates(v, t);
+                    v.config && v.config(t, false);
+                });
+            } else {
+                var t = createTag(v);
+                el.appendChild(t);
+                applyUpdates(v.children, t);
+                v.config && v.config(t, false);
+            }
+        } else if (!v && d) {
             d.parentElement.removeChild(d);
         }
     }
@@ -289,6 +298,68 @@ var qs = exports.qs = function qs() {
     var s = arguments.length <= 0 || arguments[0] === undefined ? 'body' : arguments[0];
     var el = arguments.length <= 1 || arguments[1] === undefined ? document : arguments[1];
     return el.querySelector(s);
+};
+
+var resolver = function resolver() {
+    var states = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    var promises = [];
+
+    var _await = function _await() {
+        var _promises = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
+
+        promises = promises.concat(_promises);
+        return Promise.all(promises);
+    };
+
+    var finish = function finish() {
+        var total = promises.length;
+        return Promise.all(promises).then(function (values) {
+            if (promises.length > total) {
+                return finish();
+            }
+            return values;
+        });
+    };
+
+    var resolve = function resolve(props) {
+        var keys = Object.keys(props);
+        if (!keys.length) {
+            return Promise.resolve(true);
+        }
+
+        var f = [];
+        keys.forEach(function (name) {
+            var x = props[name],
+                fn = x instanceof Function && x();
+
+            if (fn && fn.then instanceof Function) {
+                f.push(fn.then(function (d) {
+                    return states[name] = d;
+                }));
+            }
+        });
+
+        return _await(f);
+    };
+
+    var getState = function getState() {
+        return states;
+    };
+
+    return { finish: finish, resolve: resolve, getState: getState };
+};
+
+var container = exports.container = function container(view) {
+    var queries = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+    var instance = arguments.length <= 2 || arguments[2] === undefined ? resolver() : arguments[2];
+
+    instance.resolve(queries).then(function () {
+        update();
+    });
+    return function () {
+        return view(instance.getState());
+    };
 };
 
 /*

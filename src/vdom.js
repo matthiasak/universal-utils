@@ -35,6 +35,8 @@ const pool = () => {
     return {get, recycle}
 }
 
+const log = (...a) => console.log(...a)
+
 const POOL = pool()
 
 const simpleRenderingMode = false
@@ -48,15 +50,16 @@ const class_id_regex = () => {
 
 const parseSelector = s => {
     let test = null,
-        tag = tagName_regex().exec(s).slice(1)[0],
+        tagreg = tagName_regex().exec(s),
+        tag = tagreg && tagreg.slice(1)[0],
         reg = class_id_regex(),
         vdom = POOL.get()
 
-    vdom.tag = tag || ''
+    if(tag) s = s.substr(tag.length)
     vdom.classes = []
     vdom.ids = []
+    vdom.tag = tag || 'div'
 
-    if(tag) s = s.substr(tag.length)
     while((test = reg.exec(s)) !== null){
         test = test[0]
         if(test[0] === '.')
@@ -68,7 +71,7 @@ const parseSelector = s => {
 }
 
 export const m = (selector, attrs=POOL.get(), ...children) => {
-    if(attrs.tag || !(attrs instanceof Object) || attrs instanceof Array){
+    if(attrs.tag || !(attrs instanceof Object) || attrs instanceof Array || attrs instanceof Function){
         if(attrs instanceof Array) children.unshift(...attrs)
         else children.unshift(attrs)
         attrs = POOL.get()
@@ -133,55 +136,41 @@ const rAF =
 const mounts = new Map()
 
 export const mount = (fn, el) => {
-    render(fn(), el)
     mounts.set(el, fn)
+    render(fn, el)
 }
 
-// const debounce = (func, wait) => {
-//     let timeout = null,
-//         calls = 0,
-//         memo = (func, ...args) => {
-//             timeout = null
-//             func(...args)
-//         }
-//     return (...args) => {
-//         clearTimeout(timeout)
-//         timeout = setTimeout(memo.bind(null, func, ...args), wait)
-//     }
-// }
-
-const render = //debounce(
-    (vdom, el) => rAF(() => simpleRenderingMode ? simpleApply(vdom, el) : applyUpdates(vdom, el))
-    //}, 16)
+const render = (fn, el) => rAF(() => simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el))
 
 export const update = () => {
-    for(let [el,fn] of mounts.entries()){
-        render(fn(), el)
-    }
+    for(let [el,fn] of mounts.entries())
+        render(fn, el)
 }
 
 const createTag = (vdom=POOL.get()) => {
     if(!(vdom instanceof Object))
         return document.createTextNode(vdom)
+
     let {tag, attrs, ids, classes} = vdom,
         x = document.createElement(tag),
         events = stripEvents(vdom)
 
     applyEvents(events, x)
-    attrs && Object.keys(attrs).forEach(attr => x.setAttribute(attr, attrs[attr]))
-    x.id = ids ? ids.join(' ') : ''
-    x.className = classes ? classes.join(' ') : ''
+    attrs && Object.keys(attrs).forEach(attr => x[attr] = attrs[attr])
+    x.id = (ids ? ids : []).concat(attrs.id || '').join(' ')
+    x.className = (classes ? classes : []).concat(attrs.className || '').join(' ')
+
     return x
 }
 
-const simpleApply = (vdom, el) =>
-    el.innerHTML = html(vdom)
+const simpleApply = (fn, el) =>
+    el.innerHTML = html(fn())
 
 const applyUpdates = (vdom,el) => {
-    if(!vdom) {
-        el && el.parentElement && el.parentElement.removeChild(el)
-        return
-    }
+    if(!vdom) return
+
+    while(vdom instanceof Function)
+        vdom = vdom()
 
     let __el = el && el.children,
         __v = vdom && vdom.children
@@ -189,12 +178,13 @@ const applyUpdates = (vdom,el) => {
     if(vdom instanceof Array){
         __v = vdom
     } else if(vdom instanceof Object && vdom.tag){
-        if(!el || el.tagName !== vdom.tag) {
+        if(el.tagName !== vdom.tag) {
             let t = createTag(vdom)
-            // t.innerHTML = html(vdom.children)
             el.parentElement.insertBefore(t, el)
             el.parentElement.removeChild(el)
-            return applyUpdates(__v, t)
+            applyUpdates(__v, t)
+            vdom.config && vdom.config(t, false)
+            return
         }
     } else {
         let t = document.createTextNode(vdom)
@@ -208,13 +198,28 @@ const applyUpdates = (vdom,el) => {
         let v = __v[i],
             d = __el[i]
 
+        if(v instanceof Function){
+            v = v()
+        }
+
         if(v && d){
             applyUpdates(v, d)
+            v.config && v.config(d, true)
         } else if(v && !d){
-            let t = createTag(v)
-            applyUpdates(v.children, t)
-            el.appendChild(t)
-        } else if (!vdom && d) {
+            if(v instanceof Array){
+                v.forEach(v => {
+                    let t = createTag(v)
+                    el.appendChild(t)
+                    applyUpdates(v, t)
+                    v.config && v.config(t, false)
+                })
+            } else {
+                let t = createTag(v)
+                el.appendChild(t)
+                applyUpdates(v.children, t)
+                v.config && v.config(t, false)
+            }
+        } else if (!v && d) {
             d.parentElement.removeChild(d)
         }
     }
@@ -224,6 +229,55 @@ const applyUpdates = (vdom,el) => {
 }
 
 export const qs = (s='body', el=document) => el.querySelector(s)
+
+const resolver  = (states = {}) => {
+    let promises = []
+
+    const _await = (_promises = []) => {
+        promises = promises.concat(_promises)
+        return Promise.all(promises)
+    }
+
+    const finish = () => {
+        const total = promises.length
+        return Promise.all(promises).then(values => {
+            if(promises.length > total){
+                return finish()
+            }
+            return values
+        })
+    }
+
+    const resolve = (props) => {
+        const keys = Object.keys(props)
+        if (!keys.length) {
+            return Promise.resolve(true)
+        }
+
+        let f = []
+        keys.forEach((name) => {
+            let x = props[name],
+                fn = x instanceof Function && x()
+
+            if(fn && fn.then instanceof Function){
+                f.push(fn.then(d => states[name] = d))
+            }
+        })
+
+        return _await(f)
+    }
+
+    const getState = () => states
+
+    return { finish, resolve, getState }
+}
+
+export const container = (view, queries = {}, instance=resolver()) => {
+    instance.resolve(queries).then(() => {
+        update()
+    })
+    return () => view(instance.getState())
+}
 
 /*
 usage:
