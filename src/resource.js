@@ -36,7 +36,7 @@ const resource = (config={}, defaultState={}) => {
                     //
                     // in normal URL requests, we can just carry on as normal
                     f(url(id, ...params), {resourceName: name, id, params})
-                    .then(d => {
+                    .then((d) => {
                         if(!d) throw `no data returned from ${key}`
                         return d
                     })
@@ -57,7 +57,15 @@ const resource = (config={}, defaultState={}) => {
             ))
     }
 
-    return { name, store, get: cancellable(get) }
+    const clear = (id, ...params) => {
+
+        // generate a key unique to this request for muxing/batching,
+        // if need be (serialized with the options)
+        let key = name+':'+JSON.stringify(id)+':'+JSON.stringify(params)
+        return cache.setItem(key, null)
+    }
+
+    return { name, store, get: cancellable(get), clear }
 }
 
 export default resource

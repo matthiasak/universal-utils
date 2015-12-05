@@ -82,7 +82,18 @@ var resource = function resource() {
         }));
     };
 
-    return { name: name, store: store, get: (0, _fetch2.cancellable)(get) };
+    var clear = function clear(id) {
+        for (var _len2 = arguments.length, params = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+            params[_key2 - 1] = arguments[_key2];
+        }
+
+        // generate a key unique to this request for muxing/batching,
+        // if need be (serialized with the options)
+        var key = name + ':' + JSON.stringify(id) + ':' + JSON.stringify(params);
+        return _cache2.default.setItem(key, null);
+    };
+
+    return { name: name, store: store, get: (0, _fetch2.cancellable)(get), clear: clear };
 };
 
 exports.default = resource;

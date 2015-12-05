@@ -1,6 +1,10 @@
 CHANGELOG
 ---
 
+Dec 2, 2015
+
+- added `vdom` implementation that can render a VDOM both client and server-side
+
 Nov 19, 2015
 
 - added `fp` for transducers and general functional techniques, such as `concatAll`, `concatMap`, transducers, etc.
