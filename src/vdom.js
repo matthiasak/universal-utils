@@ -1,16 +1,11 @@
-/*
-    todo:
-    - diff algo
-    - apply patch algo
-*/
 
 /*
 VDOM structure:
 {
     tag: '...',
     attrs: {},
-    classes: [], (optional)
-    ids: [], (optional)
+    className: '', (optional)
+    id: '', (optional)
     children: [], (optional)
     didMount: ...,
     willMount: ...
@@ -35,8 +30,6 @@ const pool = () => {
     return {get, recycle}
 }
 
-const log = (...a) => console.log(...a)
-
 const POOL = pool()
 
 const simpleRenderingMode = false
@@ -56,19 +49,30 @@ const parseSelector = s => {
         vdom = POOL.get()
 
     if(tag) s = s.substr(tag.length)
-    vdom.classes = []
-    vdom.ids = []
+    vdom.className = ''
     vdom.tag = tag || 'div'
 
     while((test = reg.exec(s)) !== null){
         test = test[0]
         if(test[0] === '.')
-            vdom.classes.push(test.substr(1))
+            vdom.className = (vdom.className+' '+test.substr(1)).trim()
         else if(test[0] === '#')
-            vdom.ids.push(test.substr(1))
+            vdom.id = test.substr(1)
     }
     return vdom
 }
+
+const debounce = (func, wait, immediate, timeout) =>
+    (...args) => {
+        let later = () => {
+            timeout = null
+            !immediate && func(...args)
+        }
+        var callNow = immediate && !timeout
+        clearTimeout(timeout)
+        timeout = setTimeout(later, wait || 200)
+        callNow && func(...args)
+    }
 
 export const m = (selector, attrs=POOL.get(), ...children) => {
     if(attrs.tag || !(attrs instanceof Object) || attrs instanceof Array || attrs instanceof Function){
@@ -84,35 +88,13 @@ export const m = (selector, attrs=POOL.get(), ...children) => {
 }
 
 const reservedAttrs = ['className','id']
-
-// creatign html, strip events from DOM element... for now just deleting
-const stripEvents = ({attrs}) =>
-    attrs ?
-        Object.keys(attrs)
-            .filter(x => /^on[a-zA-Z]/.exec(x))
-            .reduce((a, name) => {
-                a[name] = attrs[name]
-                delete attrs[name]
-                return a
-            }, POOL.get()) :
-        POOL.get()
-
-const applyEvents = (events, el) => {
-    Object.keys(el)
-        .filter(x => /^on[a-zA-Z]/.exec(x))
-        .forEach(x => delete el[x])
-
-    Object.keys(events).forEach(name =>
-        el.addEventListener(name.substr(2).toLowerCase(), events[name]))
-}
-
 export const html = vdom => {
     if(vdom instanceof Array) return vdom.map(c => html(c)).join(' ')
     if(!(vdom instanceof Object) || (Object.getPrototypeOf(vdom) !== Object.prototype)) return vdom
 
-    const {tag, ids, classes, attrs, children} = vdom,
-        id = `id="${(ids || []).concat(attrs ? attrs.id : '').join(' ')}"`,
-        _class = `class="${(classes || []).concat(attrs ? attrs.className : '').join(' ')}"`
+    const {tag, id, className, attrs, children} = vdom,
+        _id = `id="${(id || attrs.id || '')}"`,
+        _class = `class="${((className||'') + ' ' + (attrs.className||'')).trim()}"`
     const closing = children ? `${children.map(c => html(c)).join(' ')}</${tag}>` : ''
     // TODO: figure out wtf todo here?
     // maybe just never use these, only use html() on server rendering?
@@ -123,15 +105,49 @@ export const html = vdom => {
 
     POOL.recycle(vdom)
 
-    return `<${tag} ${id} ${_class} ${_attrs} ${!children ? '/' : ''}>${closing}`
+    return `<${tag} ${_id} ${_class} ${_attrs} ${!children ? '/' : ''}>${closing}`
 }
 
-const rAF =
+export const rAF =
       global.document &&
       (requestAnimationFrame ||
       webkitRequestAnimationFrame ||
       mozRequestAnimationFrame) ||
-      ((cb) => setTimeout(cb, 16.6))
+      (cb => setTimeout(cb, 16.6))
+
+// creatign html, strip events from DOM element... for now just deleting
+const stripEvents = ({attrs}) =>
+    attrs ?
+        Object.keys(attrs)
+            .filter(x => /^on[a-z]/.exec(x))
+            .reduce((a, name) => {
+                a[name] = attrs[name]
+                delete attrs[name]
+                return a
+            }, POOL.get()) :
+        POOL.get()
+
+const applyEvents = (events, el, strip_existing=true) => {
+    strip_existing && removeEvents(el)
+    Object.keys(events).forEach(name => el[name] = events[name])
+}
+
+const flatten = (arr) => {
+    return (!(arr instanceof Array) ? [arr] : arr).reduce((a,v) => { // TODO, maybe add [arr] here?
+        v instanceof Array ? a.push(...flatten(v)) : a.push(v)
+        return a
+    }, [])
+}
+
+const removeEvents = el => {
+    // strip away event handlers on el, if it exists
+    if(!el) return;
+    for(var i in el){
+        if(/^on([a-z]+)/.exec(i)) {
+            el[i] = null
+        }
+    }
+}
 
 const mounts = new Map()
 
@@ -140,88 +156,84 @@ export const mount = (fn, el) => {
     render(fn, el)
 }
 
-const render = (fn, el) => rAF(() => simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el))
+const render = debounce((fn, el) =>
+    simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el.children[0], el), 16.6)
 
 export const update = () => {
     for(let [el,fn] of mounts.entries())
         render(fn, el)
 }
 
-const createTag = (vdom=POOL.get()) => {
-    if(!(vdom instanceof Object))
-        return document.createTextNode(vdom)
+// recycle or create a new el
+const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
 
-    let {tag, attrs, ids, classes} = vdom,
-        x = document.createElement(tag),
-        events = stripEvents(vdom)
+    // make text nodes from primitive types
+    if(!(vdom instanceof Object)){
+        let t = document.createTextNode(vdom)
+        if(el){
+            parent.insertBefore(t,el)
+            removeEl(el)
+        } else {
+            parent.appendChild(t)
+        }
+        return t
+    }
 
-    applyEvents(events, x)
-    attrs && Object.keys(attrs).forEach(attr => x[attr] = attrs[attr])
-    x.id = (ids ? ids : []).concat(attrs.id || '').join(' ')
-    x.className = (classes ? classes : []).concat(attrs.className || '').join(' ')
+    // else make an HTMLElement from "tag" types
+    let {tag, attrs, id, className} = vdom
+    if(!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()){
+        let t = document.createElement(tag)
+        el ? (parent.insertBefore(t, el), removeEl(el)) : parent.appendChild(t)
+        el = t
+    }
 
-    return x
+    let events = stripEvents(vdom)
+    rAF(() => applyEvents(events, el))
+    attrs && Object.keys(attrs).forEach(attr =>
+        (/-/.exec(attr)) ?
+            el.setAttribute(attr, attrs[attr]) :
+            (el[attr] = attrs[attr]))
+    let _id = attrs.id || id
+    if(_id) el.id = _id
+    let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
+    if(_className) el.className = _className
+
+    return el
 }
 
-const simpleApply = (fn, el) =>
-    el.innerHTML = html(fn())
+const simpleApply = (fn, el) => el.innerHTML = html(fn())
 
-const applyUpdates = (vdom,el) => {
-    if(!vdom) return
+// find parent element, and remove the input element
+const removeEl = el => {
+    if(!el) return
+    removeEvents(el)
+    el.parentElement.removeChild(el)
+}
 
+const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
+    if(!parent || vdom === undefined){
+        console.log({message:'Rendering tree problem?', vdom, el, parent})
+        throw 'errorrrrrrrrrrrrrrr'
+    }
+
+    // if vdom is a function, execute it until it isn't
     while(vdom instanceof Function)
         vdom = vdom()
 
-    let __el = el && el.children,
-        __v = vdom && vdom.children
+    // create/edit el under parent
+    let _el = vdom instanceof Array ? parent : createTag(vdom, el, parent)
 
-    if(vdom instanceof Array){
-        __v = vdom
-    } else if(vdom instanceof Object && vdom.tag){
-        if(el.tagName !== vdom.tag) {
-            let t = createTag(vdom)
-            el.parentElement.insertBefore(t, el)
-            el.parentElement.removeChild(el)
-            applyUpdates(__v, t)
-            vdom.config && vdom.config(t, false)
-            return
-        }
-    } else {
-        let t = document.createTextNode(vdom)
-        el.parentElement.insertBefore(t, el)
-        el.parentElement.removeChild(el)
-        return
+    let vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
+        el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || []
+
+    vdom && vdom.attrs && vdom.attrs.config && rAF(() => vdom.attrs.config(_el, false))
+
+    while(el_children.length > vdom_children.length){
+        removeEl(el_children[el_children.length-1])
     }
 
-    const len = Math.max(__el.length, __v.length)
-    for(let i=0; i<len; i++){
-        let v = __v[i],
-            d = __el[i]
-
-        if(v instanceof Function){
-            v = v()
-        }
-
-        if(v && d){
-            applyUpdates(v, d)
-            v.config && v.config(d, true)
-        } else if(v && !d){
-            if(v instanceof Array){
-                v.forEach(v => {
-                    let t = createTag(v)
-                    el.appendChild(t)
-                    applyUpdates(v, t)
-                    v.config && v.config(t, false)
-                })
-            } else {
-                let t = createTag(v)
-                el.appendChild(t)
-                applyUpdates(v.children, t)
-                v.config && v.config(t, false)
-            }
-        } else if (!v && d) {
-            d.parentElement.removeChild(d)
-        }
+    for(let i=0; i<vdom_children.length; i++){
+        applyUpdates(vdom_children[i],el_children[i],_el)
     }
 
     // currently clears/zeroes out the data prematurely, need to figure this out
@@ -273,9 +285,7 @@ const resolver  = (states = {}) => {
 }
 
 export const container = (view, queries = {}, instance=resolver()) => {
-    instance.resolve(queries).then(() => {
-        update()
-    })
+    instance.resolve(queries).then(() => update())
     return () => view(instance.getState())
 }
 

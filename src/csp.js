@@ -124,7 +124,7 @@ setTimeout(() => x.close(), 2500)
 
 export const fromEvent = (obj, events, c=channel(), fn=e=>e) => {
     if(!obj.addEventListener) return
-    if(!(typeof events === 'string') || events.length) return
+    if(!(typeof events === 'string') || !events.length) return
     events = events.split(',').map(x => x.trim()).forEach(x => {
         obj.addEventListener(x, e => {
             c.spawn(function* (put, take){

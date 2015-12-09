@@ -178,7 +178,7 @@ var fromEvent = exports.fromEvent = function fromEvent(obj, events) {
     } : arguments[3];
 
     if (!obj.addEventListener) return;
-    if (!(typeof events === 'string') || events.length) return;
+    if (!(typeof events === 'string') || !events.length) return;
     events = events.split(',').map(function (x) {
         return x.trim();
     }).forEach(function (x) {

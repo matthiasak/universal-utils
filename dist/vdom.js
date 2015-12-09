@@ -9,18 +9,12 @@ Object.defineProperty(exports, "__esModule", {
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
 /*
-    todo:
-    - diff algo
-    - apply patch algo
-*/
-
-/*
 VDOM structure:
 {
     tag: '...',
     attrs: {},
-    classes: [], (optional)
-    ids: [], (optional)
+    className: '', (optional)
+    id: '', (optional)
     children: [], (optional)
     didMount: ...,
     willMount: ...
@@ -47,12 +41,6 @@ var pool = function pool() {
     return { get: get, recycle: recycle };
 };
 
-var log = function log() {
-    var _console;
-
-    return (_console = console).log.apply(_console, arguments);
-};
-
 var POOL = pool();
 
 var simpleRenderingMode = false;
@@ -74,20 +62,36 @@ var parseSelector = function parseSelector(s) {
         vdom = POOL.get();
 
     if (tag) s = s.substr(tag.length);
-    vdom.classes = [];
-    vdom.ids = [];
+    vdom.className = '';
     vdom.tag = tag || 'div';
 
     while ((test = reg.exec(s)) !== null) {
         test = test[0];
-        if (test[0] === '.') vdom.classes.push(test.substr(1));else if (test[0] === '#') vdom.ids.push(test.substr(1));
+        if (test[0] === '.') vdom.className = (vdom.className + ' ' + test.substr(1)).trim();else if (test[0] === '#') vdom.id = test.substr(1);
     }
     return vdom;
 };
 
+var debounce = function debounce(func, wait, immediate, timeout) {
+    return function () {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+            args[_key] = arguments[_key];
+        }
+
+        var later = function later() {
+            timeout = null;
+            !immediate && func.apply(undefined, args);
+        };
+        var callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait || 200);
+        callNow && func.apply(undefined, args);
+    };
+};
+
 var m = exports.m = function m(selector) {
-    for (var _len = arguments.length, children = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-        children[_key - 2] = arguments[_key];
+    for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
+        children[_key2 - 2] = arguments[_key2];
     }
 
     var attrs = arguments.length <= 1 || arguments[1] === undefined ? POOL.get() : arguments[1];
@@ -103,33 +107,6 @@ var m = exports.m = function m(selector) {
 };
 
 var reservedAttrs = ['className', 'id'];
-
-// creatign html, strip events from DOM element... for now just deleting
-var stripEvents = function stripEvents(_ref) {
-    var attrs = _ref.attrs;
-    return attrs ? Object.keys(attrs).filter(function (x) {
-        return (/^on[a-zA-Z]/.exec(x)
-        );
-    }).reduce(function (a, name) {
-        a[name] = attrs[name];
-        delete attrs[name];
-        return a;
-    }, POOL.get()) : POOL.get();
-};
-
-var applyEvents = function applyEvents(events, el) {
-    Object.keys(el).filter(function (x) {
-        return (/^on[a-zA-Z]/.exec(x)
-        );
-    }).forEach(function (x) {
-        return delete el[x];
-    });
-
-    Object.keys(events).forEach(function (name) {
-        return el.addEventListener(name.substr(2).toLowerCase(), events[name]);
-    });
-};
-
 var html = exports.html = function html(vdom) {
     if (vdom instanceof Array) return vdom.map(function (c) {
         return html(c);
@@ -137,12 +114,12 @@ var html = exports.html = function html(vdom) {
     if (!(vdom instanceof Object) || Object.getPrototypeOf(vdom) !== Object.prototype) return vdom;
 
     var tag = vdom.tag;
-    var ids = vdom.ids;
-    var classes = vdom.classes;
+    var id = vdom.id;
+    var className = vdom.className;
     var attrs = vdom.attrs;
     var children = vdom.children;
-    var id = 'id="' + (ids || []).concat(attrs ? attrs.id : '').join(' ') + '"';
-    var _class = 'class="' + (classes || []).concat(attrs ? attrs.className : '').join(' ') + '"';
+    var _id = 'id="' + (id || attrs.id || '') + '"';
+    var _class = 'class="' + ((className || '') + ' ' + (attrs.className || '')).trim() + '"';
     var closing = children ? children.map(function (c) {
         return html(c);
     }).join(' ') + '</' + tag + '>' : '';
@@ -157,11 +134,51 @@ var html = exports.html = function html(vdom) {
 
     POOL.recycle(vdom);
 
-    return '<' + tag + ' ' + id + ' ' + _class + ' ' + _attrs + ' ' + (!children ? '/' : '') + '>' + closing;
+    return '<' + tag + ' ' + _id + ' ' + _class + ' ' + _attrs + ' ' + (!children ? '/' : '') + '>' + closing;
 };
 
-var rAF = global.document && (requestAnimationFrame || webkitRequestAnimationFrame || mozRequestAnimationFrame) || function (cb) {
+var rAF = exports.rAF = global.document && (requestAnimationFrame || webkitRequestAnimationFrame || mozRequestAnimationFrame) || function (cb) {
     return setTimeout(cb, 16.6);
+};
+
+// creatign html, strip events from DOM element... for now just deleting
+var stripEvents = function stripEvents(_ref) {
+    var attrs = _ref.attrs;
+    return attrs ? Object.keys(attrs).filter(function (x) {
+        return (/^on[a-z]/.exec(x)
+        );
+    }).reduce(function (a, name) {
+        a[name] = attrs[name];
+        delete attrs[name];
+        return a;
+    }, POOL.get()) : POOL.get();
+};
+
+var applyEvents = function applyEvents(events, el) {
+    var strip_existing = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
+
+    strip_existing && removeEvents(el);
+    Object.keys(events).forEach(function (name) {
+        return el[name] = events[name];
+    });
+};
+
+var flatten = function flatten(arr) {
+    return (!(arr instanceof Array) ? [arr] : arr).reduce(function (a, v) {
+        // TODO, maybe add [arr] here?
+        v instanceof Array ? a.push.apply(a, _toConsumableArray(flatten(v))) : a.push(v);
+        return a;
+    }, []);
+};
+
+var removeEvents = function removeEvents(el) {
+    // strip away event handlers on el, if it exists
+    if (!el) return;
+    for (var i in el) {
+        if (/^on([a-z]+)/.exec(i)) {
+            el[i] = null;
+        }
+    }
 };
 
 var mounts = new Map();
@@ -171,11 +188,9 @@ var mount = exports.mount = function mount(fn, el) {
     render(fn, el);
 };
 
-var render = function render(fn, el) {
-    return rAF(function () {
-        return simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el);
-    });
-};
+var render = debounce(function (fn, el) {
+    return simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el.children[0], el);
+}, 16.6);
 
 var update = exports.update = function update() {
     var _iteratorNormalCompletion = true;
@@ -207,87 +222,90 @@ var update = exports.update = function update() {
     }
 };
 
+// recycle or create a new el
 var createTag = function createTag() {
     var vdom = arguments.length <= 0 || arguments[0] === undefined ? POOL.get() : arguments[0];
+    var el = arguments[1];
+    var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
-    if (!(vdom instanceof Object)) return document.createTextNode(vdom);
+    // make text nodes from primitive types
+    if (!(vdom instanceof Object)) {
+        var t = document.createTextNode(vdom);
+        if (el) {
+            parent.insertBefore(t, el);
+            removeEl(el);
+        } else {
+            parent.appendChild(t);
+        }
+        return t;
+    }
 
+    // else make an HTMLElement from "tag" types
     var tag = vdom.tag;
     var attrs = vdom.attrs;
-    var ids = vdom.ids;
-    var classes = vdom.classes;
-    var x = document.createElement(tag);
+    var id = vdom.id;
+    var className = vdom.className;
+
+    if (!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()) {
+        var t = document.createElement(tag);
+        el ? (parent.insertBefore(t, el), removeEl(el)) : parent.appendChild(t);
+        el = t;
+    }
+
     var events = stripEvents(vdom);
-
-    applyEvents(events, x);
-    attrs && Object.keys(attrs).forEach(function (attr) {
-        return x[attr] = attrs[attr];
+    rAF(function () {
+        return applyEvents(events, el);
     });
-    x.id = (ids ? ids : []).concat(attrs.id || '').join(' ');
-    x.className = (classes ? classes : []).concat(attrs.className || '').join(' ');
+    attrs && Object.keys(attrs).forEach(function (attr) {
+        return (/-/.exec(attr) ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr]
+        );
+    });
+    var _id = attrs.id || id;
+    if (_id) el.id = _id;
+    var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
+    if (_className) el.className = _className;
 
-    return x;
+    return el;
 };
 
 var simpleApply = function simpleApply(fn, el) {
     return el.innerHTML = html(fn());
 };
 
+// find parent element, and remove the input element
+var removeEl = function removeEl(el) {
+    if (!el) return;
+    removeEvents(el);
+    el.parentElement.removeChild(el);
+};
+
 var applyUpdates = function applyUpdates(vdom, el) {
-    if (!vdom) return;
+    var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
-    while (vdom instanceof Function) {
-        vdom = vdom();
-    }var __el = el && el.children,
-        __v = vdom && vdom.children;
-
-    if (vdom instanceof Array) {
-        __v = vdom;
-    } else if (vdom instanceof Object && vdom.tag) {
-        if (el.tagName !== vdom.tag) {
-            var t = createTag(vdom);
-            el.parentElement.insertBefore(t, el);
-            el.parentElement.removeChild(el);
-            applyUpdates(__v, t);
-            vdom.config && vdom.config(t, false);
-            return;
-        }
-    } else {
-        var t = document.createTextNode(vdom);
-        el.parentElement.insertBefore(t, el);
-        el.parentElement.removeChild(el);
-        return;
+    if (!parent || vdom === undefined) {
+        console.log({ message: 'Rendering tree problem?', vdom: vdom, el: el, parent: parent });
+        throw 'errorrrrrrrrrrrrrrr';
     }
 
-    var len = Math.max(__el.length, __v.length);
-    for (var i = 0; i < len; i++) {
-        var v = __v[i],
-            d = __el[i];
+    // if vdom is a function, execute it until it isn't
+    while (vdom instanceof Function) {
+        vdom = vdom();
+    } // create/edit el under parent
+    var _el = vdom instanceof Array ? parent : createTag(vdom, el, parent);
 
-        if (v instanceof Function) {
-            v = v();
-        }
+    var vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
+        el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || [];
 
-        if (v && d) {
-            applyUpdates(v, d);
-            v.config && v.config(d, true);
-        } else if (v && !d) {
-            if (v instanceof Array) {
-                v.forEach(function (v) {
-                    var t = createTag(v);
-                    el.appendChild(t);
-                    applyUpdates(v, t);
-                    v.config && v.config(t, false);
-                });
-            } else {
-                var t = createTag(v);
-                el.appendChild(t);
-                applyUpdates(v.children, t);
-                v.config && v.config(t, false);
-            }
-        } else if (!v && d) {
-            d.parentElement.removeChild(d);
-        }
+    vdom && vdom.attrs && vdom.attrs.config && rAF(function () {
+        return vdom.attrs.config(_el, false);
+    });
+
+    while (el_children.length > vdom_children.length) {
+        removeEl(el_children[el_children.length - 1]);
+    }
+
+    for (var i = 0; i < vdom_children.length; i++) {
+        applyUpdates(vdom_children[i], el_children[i], _el);
     }
 
     // currently clears/zeroes out the data prematurely, need to figure this out
@@ -355,7 +373,7 @@ var container = exports.container = function container(view) {
     var instance = arguments.length <= 2 || arguments[2] === undefined ? resolver() : arguments[2];
 
     instance.resolve(queries).then(function () {
-        update();
+        return update();
     });
     return function () {
         return view(instance.getState());

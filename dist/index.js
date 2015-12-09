@@ -36,4 +36,4 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-module.exports = { cache: _cache2.default, store: _store2.default, resource: _resource2.default, router: _router2.default, batch: _fetch.batch, fetch: _fetch.fetch, cancellable: _fetch.cancellable, mux: _mux2.default, channel: _csp2.default, fp: fp, m: _vdom.m, html: _vdom.html, mount: _vdom.mount, update: _vdom.update, qs: _vdom.qs, container: _vdom.container };
+module.exports = { cache: _cache2.default, store: _store2.default, resource: _resource2.default, router: _router2.default, batch: _fetch.batch, fetch: _fetch.fetch, cancellable: _fetch.cancellable, mux: _mux2.default, channel: _csp2.default, fp: fp, m: _vdom.m, html: _vdom.html, mount: _vdom.mount, update: _vdom.update, qs: _vdom.qs, container: _vdom.container, rAF: _vdom.rAF };
