@@ -1,20 +1,3 @@
-
-/*
-VDOM structure:
-{
-    tag: '...',
-    attrs: {},
-    className: '', (optional)
-    id: '', (optional)
-    children: [], (optional)
-    didMount: ...,
-    willMount: ...
-    didUnmount: ...,
-    willUnmount: ...,
-    shouldComponentUpdate: ...,
-}
- */
-
 const pool = () => {
     let pool = []
 
