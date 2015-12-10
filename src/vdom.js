@@ -190,7 +190,7 @@ const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
     let events = stripEvents(vdom)
     rAF(() => applyEvents(events, el))
     attrs && Object.keys(attrs).forEach(attr =>
-        (/-/.exec(attr)) ?
+        (attr.indexOf('-')!==-1) ?
             el.setAttribute(attr, attrs[attr]) :
             (el[attr] = attrs[attr]))
     let _id = attrs.id || id
@@ -211,10 +211,10 @@ const removeEl = el => {
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
-    if(!parent || vdom === undefined){
-        console.log({message:'Rendering tree problem?', vdom, el, parent})
-        throw 'errorrrrrrrrrrrrrrr'
-    }
+    // if(!parent || vdom === undefined){
+    //     console.log({message:'Rendering tree problem?', vdom, el, parent})
+    //     throw 'errorrrrrrrrrrrrrrr'
+    // }
 
     // if vdom is a function, execute it until it isn't
     while(vdom instanceof Function)
@@ -226,7 +226,7 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
     let vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
         el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || []
 
-    vdom && vdom.attrs && vdom.attrs.config && rAF(() => vdom.attrs.config(_el, false))
+    vdom && vdom.attrs && vdom.attrs.config && rAF(() => vdom.attrs.config(_el))
 
     while(el_children.length > vdom_children.length){
         removeEl(el_children[el_children.length-1])

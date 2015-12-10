@@ -257,8 +257,7 @@ var createTag = function createTag() {
         return applyEvents(events, el);
     });
     attrs && Object.keys(attrs).forEach(function (attr) {
-        return (/-/.exec(attr) ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr]
-        );
+        return attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
     });
     var _id = attrs.id || id;
     if (_id) el.id = _id;
@@ -282,10 +281,10 @@ var removeEl = function removeEl(el) {
 var applyUpdates = function applyUpdates(vdom, el) {
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
-    if (!parent || vdom === undefined) {
-        console.log({ message: 'Rendering tree problem?', vdom: vdom, el: el, parent: parent });
-        throw 'errorrrrrrrrrrrrrrr';
-    }
+    // if(!parent || vdom === undefined){
+    //     console.log({message:'Rendering tree problem?', vdom, el, parent})
+    //     throw 'errorrrrrrrrrrrrrrr'
+    // }
 
     // if vdom is a function, execute it until it isn't
     while (vdom instanceof Function) {
@@ -297,7 +296,7 @@ var applyUpdates = function applyUpdates(vdom, el) {
         el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || [];
 
     vdom && vdom.attrs && vdom.attrs.config && rAF(function () {
-        return vdom.attrs.config(_el, false);
+        return vdom.attrs.config(_el);
     });
 
     while (el_children.length > vdom_children.length) {
