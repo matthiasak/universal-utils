@@ -87,6 +87,8 @@ var m = exports.m = function m(selector) {
     var vdom = parseSelector(selector);
     if (children.length) vdom.children = children;
     vdom.attrs = attrs;
+    vdom.unload = attrs.unload;
+    delete attrs.unload;
     return vdom;
 };
 
@@ -229,6 +231,7 @@ var createTag = function createTag() {
     var attrs = vdom.attrs;
     var id = vdom.id;
     var className = vdom.className;
+    var unload = vdom.unload;
 
     if (!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()) {
         var t = document.createElement(tag);
@@ -247,6 +250,9 @@ var createTag = function createTag() {
     if (_id) el.id = _id;
     var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
     if (_className) el.className = _className;
+    if (unload instanceof Function) {
+        if (el.unload && el.unload.indexOf(unload) === -1) el.unload.push(unload);else if (!el.unload) el.unload = [unload];
+    }
 
     return el;
 };
@@ -260,6 +266,9 @@ var removeEl = function removeEl(el) {
     if (!el) return;
     removeEvents(el);
     el.parentElement.removeChild(el);
+    if (el.unload instanceof Array) el.map(function (x) {
+        return x();
+    });
 };
 
 var applyUpdates = function applyUpdates(vdom, el) {

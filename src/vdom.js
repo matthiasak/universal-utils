@@ -67,6 +67,8 @@ export const m = (selector, attrs=POOL.get(), ...children) => {
     if(children.length)
         vdom.children = children
     vdom.attrs = attrs
+    vdom.unload = attrs.unload
+    delete attrs.unload
     return vdom
 }
 
@@ -163,7 +165,7 @@ const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
     }
 
     // else make an HTMLElement from "tag" types
-    let {tag, attrs, id, className} = vdom
+    let {tag, attrs, id, className, unload} = vdom
     if(!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()){
         let t = document.createElement(tag)
         el ? (parent.insertBefore(t, el), removeEl(el)) : parent.appendChild(t)
@@ -180,6 +182,10 @@ const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
     if(_id) el.id = _id
     let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
     if(_className) el.className = _className
+    if(unload instanceof Function) {
+        if(el.unload && (el.unload.indexOf(unload) === -1)) el.unload.push(unload)
+        else if(!el.unload) el.unload = [unload]
+    }
 
     return el
 }
@@ -191,6 +197,7 @@ const removeEl = el => {
     if(!el) return
     removeEvents(el)
     el.parentElement.removeChild(el)
+    if(el.unload instanceof Array) el.map(x => x())
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
