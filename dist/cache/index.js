@@ -46,8 +46,24 @@ var nodeCache = function nodeCache() {
                 });
             };
 
+            var clear = function clear() {
+                return new Promise(function (res, rej) {
+                    client.keys('*', function () {
+                        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                            args[_key] = arguments[_key];
+                        }
+
+                        return args.map(function (key) {
+                            return client.del(key);
+                        });
+                    });
+
+                    res();
+                });
+            };
+
             return {
-                v: { getItem: getItem, setItem: setItem }
+                v: { getItem: getItem, setItem: setItem, clear: clear }
             };
         })();
 
@@ -81,8 +97,13 @@ var nodeCache = function nodeCache() {
                 });
             };
 
+            var clear = function clear() {
+                cache = {};
+                return Promise.resolve();
+            };
+
             return {
-                v: { getItem: getItem, setItem: setItem }
+                v: { getItem: getItem, setItem: setItem, clear: clear }
             };
         })();
 

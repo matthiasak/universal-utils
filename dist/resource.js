@@ -87,6 +87,10 @@ var resource = function resource() {
             params[_key2 - 1] = arguments[_key2];
         }
 
+        if (!id) {
+            return _cache2.default.clear();
+        }
+
         // generate a key unique to this request for muxing/batching,
         // if need be (serialized with the options)
         var key = name + ':' + JSON.stringify(id) + ':' + JSON.stringify(params);

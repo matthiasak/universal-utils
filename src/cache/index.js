@@ -70,7 +70,7 @@ const nodeCache = () => {
         }
 
         const clear = () => {
-            delete cache = {}
+            cache = {}
             return Promise.resolve()
         }
 
