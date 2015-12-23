@@ -32,7 +32,16 @@ const nodeCache = () => {
             })
         }
 
-        return { getItem, setItem }
+        const clear = () =>
+            new Promise((res,rej) => {
+                client.keys('*', (...args) =>
+                    args.map(key =>
+                        client.del(key)))
+
+                res()
+            })
+
+        return { getItem, setItem, clear }
 
     } else {
 
@@ -60,7 +69,12 @@ const nodeCache = () => {
             })
         }
 
-        return { getItem, setItem }
+        const clear = () => {
+            delete cache = {}
+            return Promise.resolve()
+        }
+
+        return { getItem, setItem, clear }
     }
 }
 

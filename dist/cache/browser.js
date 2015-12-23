@@ -33,7 +33,11 @@ var cache = function cache() {
         return storage.setItem(key, { expiresAt: expiresAt, data: val });
     };
 
-    return { getItem: getItem, setItem: setItem };
+    var clear = function clear() {
+        return storage.clear();
+    };
+
+    return { getItem: getItem, setItem: setItem, clear: clear };
 };
 
 var c = cache();

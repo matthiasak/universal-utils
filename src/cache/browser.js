@@ -23,7 +23,10 @@ const cache = () => {
         return storage.setItem(key, {expiresAt, data:val})
     }
 
-    return { getItem, setItem }
+    const clear = () =>
+        storage.clear()
+
+    return { getItem, setItem, clear }
 }
 
 const c = cache()
