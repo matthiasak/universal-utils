@@ -33,11 +33,21 @@ var cache = function cache() {
         return storage.setItem(key, { expiresAt: expiresAt, data: val });
     };
 
-    var clear = function clear() {
-        return storage.clear();
+    var clearAll = function clearAll(key) {
+        return storage.keys().then(function (keys) {
+            return Promise.all(keys.filter(function (x) {
+                return x.indexOf(key) !== -1;
+            }).map(function (x) {
+                return Promise.resolve(x);
+            }));
+        }).then(function (keys) {
+            return Promise.all(keys.map(function (k) {
+                return storage.clear(k);
+            }));
+        });
     };
 
-    return { getItem: getItem, setItem: setItem, clear: clear };
+    return { getItem: getItem, setItem: setItem, clearAll: clearAll };
 };
 
 var c = cache();

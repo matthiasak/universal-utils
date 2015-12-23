@@ -59,7 +59,7 @@ const resource = (config={}, defaultState={}) => {
 
     const clear = (id, ...params) => {
         if(!id) {
-            return cache.clear()
+            return cache.clearAll(name+":")
         }
 
         // generate a key unique to this request for muxing/batching,

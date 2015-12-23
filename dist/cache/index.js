@@ -46,15 +46,15 @@ var nodeCache = function nodeCache() {
                 });
             };
 
-            var clear = function clear() {
+            var clearAll = function clearAll(key) {
                 return new Promise(function (res, rej) {
-                    client.keys('*', function () {
+                    client.keys(key, function () {
                         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
                             args[_key] = arguments[_key];
                         }
 
-                        return args.map(function (key) {
-                            return client.del(key);
+                        return args.map(function (x) {
+                            return client.del(x);
                         });
                     });
 
@@ -63,7 +63,7 @@ var nodeCache = function nodeCache() {
             };
 
             return {
-                v: { getItem: getItem, setItem: setItem, clear: clear }
+                v: { getItem: getItem, setItem: setItem, clearAll: clearAll }
             };
         })();
 
@@ -97,13 +97,17 @@ var nodeCache = function nodeCache() {
                 });
             };
 
-            var clear = function clear() {
-                cache = {};
+            var clearAll = function clearAll(key) {
+                Object.keys(cache).filter(function (n) {
+                    return n.indexOf(key) !== -1;
+                }).map(function (x) {
+                    return delete cache[x];
+                });
                 return Promise.resolve();
             };
 
             return {
-                v: { getItem: getItem, setItem: setItem, clear: clear }
+                v: { getItem: getItem, setItem: setItem, clearAll: clearAll }
             };
         })();
 

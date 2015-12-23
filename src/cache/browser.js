@@ -23,10 +23,17 @@ const cache = () => {
         return storage.setItem(key, {expiresAt, data:val})
     }
 
-    const clear = () =>
-        storage.clear()
+    const clearAll = (key) =>
+        storage.keys()
+            .then(keys =>
+                Promise.all(keys.filter(x =>
+                    x.indexOf(key) !== -1).map(x =>
+                        Promise.resolve(x))))
+            .then(keys =>
+                Promise.all(keys.map(k =>
+                    storage.clear(k))))
 
-    return { getItem, setItem, clear }
+    return { getItem, setItem, clearAll }
 }
 
 const c = cache()

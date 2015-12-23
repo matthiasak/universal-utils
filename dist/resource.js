@@ -88,7 +88,7 @@ var resource = function resource() {
         }
 
         if (!id) {
-            return _cache2.default.clear();
+            return _cache2.default.clearAll(name + ":");
         }
 
         // generate a key unique to this request for muxing/batching,
