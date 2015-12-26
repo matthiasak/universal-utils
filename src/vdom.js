@@ -45,7 +45,7 @@ const parseSelector = s => {
     return vdom
 }
 
-const debounce = (func, wait, immediate, timeout) =>
+export const debounce = (func, wait, immediate, timeout) =>
     (...args) => {
         let later = () => {
             timeout = null
@@ -67,8 +67,12 @@ export const m = (selector, attrs=POOL.get(), ...children) => {
     if(children.length)
         vdom.children = children
     vdom.attrs = attrs
+    vdom.shouldUpdate = attrs.shouldUpdate
     vdom.unload = attrs.unload
+    vdom.config = attrs.config
     delete attrs.unload
+    delete attrs.shouldUpdate
+    delete attrs.config
     return vdom
 }
 
@@ -149,6 +153,18 @@ export const update = () => {
         render(fn, el)
 }
 
+const setAttrs = ({attrs, id, className},el) => {
+    attrs && Object.keys(attrs).forEach(attr =>
+        (attr.indexOf('-')!==-1) ?
+            el.setAttribute(attr, attrs[attr]) :
+            (el[attr] = attrs[attr]))
+
+    let _id = attrs.id || id
+    if(_id) el.id = _id
+    let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
+    if(_className) el.className = _className
+}
+
 // recycle or create a new el
 const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
 
@@ -165,28 +181,25 @@ const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
     }
 
     // else make an HTMLElement from "tag" types
-    let {tag, attrs, id, className, unload} = vdom
-    if(!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()){
+    let {tag, attrs, id, className, unload, shouldUpdate, config} = vdom,
+        shouldExchange = !el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase(),
+        _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate()
+
+    if(!_shouldUpdate && el) return
+
+    if(shouldExchange){
         let t = document.createElement(tag)
         el ? (parent.insertBefore(t, el), removeEl(el)) : parent.appendChild(t)
         el = t
     }
 
-    let events = stripEvents(vdom)
-    rAF(() => applyEvents(events, el))
-    attrs && Object.keys(attrs).forEach(attr =>
-        (attr.indexOf('-')!==-1) ?
-            el.setAttribute(attr, attrs[attr]) :
-            (el[attr] = attrs[attr]))
-    let _id = attrs.id || id
-    if(_id) el.id = _id
-    let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
-    if(_className) el.className = _className
+    setAttrs(vdom, el)
     if(unload instanceof Function) {
         if(el.unload && (el.unload.indexOf(unload) === -1)) el.unload.push(unload)
         else if(!el.unload) el.unload = [unload]
     }
-
+    applyEvents(stripEvents(vdom), el)
+    config && rAF(_ => config(el))
     return el
 }
 
@@ -213,10 +226,10 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
     // create/edit el under parent
     let _el = vdom instanceof Array ? parent : createTag(vdom, el, parent)
 
+    if(!_el) return
+
     let vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
         el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || []
-
-    vdom && vdom.attrs && vdom.attrs.config && rAF(() => vdom.attrs.config(_el))
 
     while(el_children.length > vdom_children.length){
         removeEl(el_children[el_children.length-1])

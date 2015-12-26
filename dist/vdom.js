@@ -56,7 +56,7 @@ var parseSelector = function parseSelector(s) {
     return vdom;
 };
 
-var debounce = function debounce(func, wait, immediate, timeout) {
+var debounce = exports.debounce = function debounce(func, wait, immediate, timeout) {
     return function () {
         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
             args[_key] = arguments[_key];
@@ -87,8 +87,12 @@ var m = exports.m = function m(selector) {
     var vdom = parseSelector(selector);
     if (children.length) vdom.children = children;
     vdom.attrs = attrs;
+    vdom.shouldUpdate = attrs.shouldUpdate;
     vdom.unload = attrs.unload;
+    vdom.config = attrs.config;
     delete attrs.unload;
+    delete attrs.shouldUpdate;
+    delete attrs.config;
     return vdom;
 };
 
@@ -208,6 +212,21 @@ var update = exports.update = function update() {
     }
 };
 
+var setAttrs = function setAttrs(_ref2, el) {
+    var attrs = _ref2.attrs;
+    var id = _ref2.id;
+    var className = _ref2.className;
+
+    attrs && Object.keys(attrs).forEach(function (attr) {
+        return attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
+    });
+
+    var _id = attrs.id || id;
+    if (_id) el.id = _id;
+    var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
+    if (_className) el.className = _className;
+};
+
 // recycle or create a new el
 var createTag = function createTag() {
     var vdom = arguments.length <= 0 || arguments[0] === undefined ? POOL.get() : arguments[0];
@@ -232,28 +251,27 @@ var createTag = function createTag() {
     var id = vdom.id;
     var className = vdom.className;
     var unload = vdom.unload;
+    var shouldUpdate = vdom.shouldUpdate;
+    var config = vdom.config;
+    var shouldExchange = !el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase();
+    var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate();
 
-    if (!el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase()) {
+    if (!_shouldUpdate && el) return;
+
+    if (shouldExchange) {
         var t = document.createElement(tag);
         el ? (parent.insertBefore(t, el), removeEl(el)) : parent.appendChild(t);
         el = t;
     }
 
-    var events = stripEvents(vdom);
-    rAF(function () {
-        return applyEvents(events, el);
-    });
-    attrs && Object.keys(attrs).forEach(function (attr) {
-        return attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
-    });
-    var _id = attrs.id || id;
-    if (_id) el.id = _id;
-    var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
-    if (_className) el.className = _className;
+    setAttrs(vdom, el);
     if (unload instanceof Function) {
         if (el.unload && el.unload.indexOf(unload) === -1) el.unload.push(unload);else if (!el.unload) el.unload = [unload];
     }
-
+    applyEvents(stripEvents(vdom), el);
+    config && rAF(function (_) {
+        return config(el);
+    });
     return el;
 };
 
@@ -285,12 +303,10 @@ var applyUpdates = function applyUpdates(vdom, el) {
     } // create/edit el under parent
     var _el = vdom instanceof Array ? parent : createTag(vdom, el, parent);
 
+    if (!_el) return;
+
     var vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
         el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || [];
-
-    vdom && vdom.attrs && vdom.attrs.config && rAF(function () {
-        return vdom.attrs.config(_el);
-    });
 
     while (el_children.length > vdom_children.length) {
         removeEl(el_children[el_children.length - 1]);
