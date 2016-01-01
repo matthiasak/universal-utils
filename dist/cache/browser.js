@@ -1,50 +1,43 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-var clone = function clone(obj) {
-    return JSON.parse(JSON.stringify(obj));
-};
-
-var storage = require('localforage');
-
-// Force localStorage to be the backend driver.
-storage.setDriver(storage.LOCALSTORAGE);
+var s = window.localStorage;
 
 var cache = function cache() {
 
     var getItem = function getItem(key) {
         var expire = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
-        return storage.getItem(key).then(function (d) {
-            if (!(d && d.data)) throw key + ' not in cache';
-            var expired = expire || +new Date() > d.expiresAt;
-            if (expired) throw key + ' is expired';
-            return d.data;
-        });
+        var data = s.getItem(key);
+        if (!d) return Promise.reject(key + " not in cache");
+        var expired = expire || +new Date() > d.expiresAt;
+        if (expired) return Promise.reject(key + " is expired");
+        return Promise.resolve(JSON.parse(d.data));
     };
 
-    var setItem = function setItem(key, val) {
+    var setItem = function setItem(key, data) {
         var timeout = arguments.length <= 2 || arguments[2] === undefined ? 5 * 60 * 60 * 1000 : arguments[2];
+        var expiresAt = arguments.length <= 3 || arguments[3] === undefined ? +new Date() + timeout : arguments[3];
 
-        if (!val) return Promise.reject('val was null/undefined');
-        var expiresAt = +new Date() + timeout;
-        return storage.setItem(key, { expiresAt: expiresAt, data: val });
+        if (!data) return Promise.reject("data being set on " + key + " was null/undefined");
+        return new Promise(function (res, rej) {
+            try {
+                s.setItem(key, JSON.stringify({ expiresAt: expiresAt, data: data }));
+                res(true);
+            } catch (e) {
+                rej("key " + key + " has a value of " + val + ", which can't be serialized");
+            }
+        });
     };
 
     var clearAll = function clearAll(key) {
-        return storage.keys().then(function (keys) {
-            return Promise.all(keys.filter(function (x) {
-                return x.indexOf(key) !== -1;
-            }).map(function (x) {
-                return Promise.resolve(x);
-            }));
-        }).then(function (keys) {
-            return Promise.all(keys.map(function (k) {
-                return storage.clear(k);
-            }));
-        });
+        if (!key) s.clear();
+        for (var i in s) {
+            if ((!key || i.indexOf(key) !== -1) && localstorage.hasOwnProperty(i)) s.removeItem(i);
+        }
+        return Promise.resolve(true);
     };
 
     return { getItem: getItem, setItem: setItem, clearAll: clearAll };
@@ -52,11 +45,3 @@ var cache = function cache() {
 
 var c = cache();
 exports.default = c;
-
-// ---- extra config options ----
-// window.storage = storage
-// window.cache = c
-// storage.config({
-//     // driver: storage.LOCALSTORAGE,
-//     name: 'rentvillas'
-// })

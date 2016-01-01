@@ -22,7 +22,7 @@ const cache = () => {
         })
     }
 
-    const clearAll = key =>
+    const clearAll = key => {
         if(!key)
             s.clear()
         for(var i in s){
@@ -30,6 +30,7 @@ const cache = () => {
                 s.removeItem(i)
         }
         return Promise.resolve(true)
+    }
 
     return { getItem, setItem, clearAll }
 }
