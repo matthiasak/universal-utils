@@ -3,14 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.muxer = undefined;
 
 var _fetch = require('./fetch');
 
 var _store = require('./store');
-
-var _store2 = _interopRequireDefault(_store);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -40,12 +37,12 @@ var debounce = function debounce(func, wait, timeout) {
  * ]
  */
 
-var muxer = function muxer(batch_url) {
+var muxer = exports.muxer = function muxer(batch_url) {
     var f = arguments.length <= 1 || arguments[1] === undefined ? _fetch.fetch : arguments[1];
     var wait = arguments.length <= 2 || arguments[2] === undefined ? 60 : arguments[2];
     var max_buffer_size = arguments.length <= 3 || arguments[3] === undefined ? 8 : arguments[3];
 
-    var payload = (0, _store2.default)([]);
+    var payload = (0, _store.store)([]);
 
     // puts url,options,id on payload
     var worker = function worker(url, options) {
@@ -107,8 +104,6 @@ var muxer = function muxer(batch_url) {
 
     return (0, _fetch.cancellable)(get);
 };
-
-exports.default = muxer;
 
 // example
 // ----------

@@ -12,7 +12,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 //
 // Example usage at end of this file.
 
-var router = function router(routes, routeTransform) {
+var router = exports.router = function router(routes, routeTransform) {
     var hashroutes = Object.keys(routes).map(function (route) {
         var tokens = route.match(/:(\w+)/ig),
             handler = routeTransform(routes[route]);
@@ -86,8 +86,6 @@ var router = function router(routes, routeTransform) {
 
     return { page: page };
 };
-
-exports.default = router;
 
 /**
  * EXAMPLE USAGE

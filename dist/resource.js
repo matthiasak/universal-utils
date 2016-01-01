@@ -6,28 +6,23 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.resource = undefined;
 
 var _store = require('./store');
 
-var _store2 = _interopRequireDefault(_store);
-
 var _cache = require('./cache');
-
-var _cache2 = _interopRequireDefault(_cache);
 
 var _fetch2 = require('./fetch');
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-var resource = function resource() {
+var resource = exports.resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var defaultState = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 
     var inflight = {};
 
-    var store = (0, _store2.default)(defaultState);
+    var store = (0, _store.store)(defaultState);
     var url = config.url;
     var fetch = config.fetch;
     var nocache = config.nocache;
@@ -47,7 +42,7 @@ var resource = function resource() {
         // get an inflight Promise the resolves to the data, keyed by `id`,
         // or create a new one
         return inflight[key] || (inflight[key] = new Promise(function (res, rej) {
-            return (nocache ? Promise.reject() : _cache2.default.getItem(key)).then(function (d) {
+            return (nocache ? Promise.reject() : _cache.cache.getItem(key)).then(function (d) {
                 return res(d);
             }).catch(function (error) {
                 return(
@@ -64,7 +59,7 @@ var resource = function resource() {
                         return store.dispatch(function (state, next) {
                             var _state = _extends({}, state, _defineProperty({}, key, d)); // make new state
                             inflight = _extends({}, inflight, _defineProperty({}, key, undefined)); // clear in-flight promise
-                            !nocache && _cache2.default.setItem(key, d, cacheDuration);
+                            !nocache && _cache.cache.setItem(key, d, cacheDuration);
                             next(_state); // store's new state is _state
                         }).then(function (state) {
                             return state[key];
@@ -88,19 +83,17 @@ var resource = function resource() {
         }
 
         if (!id) {
-            return _cache2.default.clearAll(name + ":");
+            return _cache.cache.clearAll(name + ":");
         }
 
         // generate a key unique to this request for muxing/batching,
         // if need be (serialized with the options)
         var key = name + ':' + JSON.stringify(id) + ':' + JSON.stringify(params);
-        return _cache2.default.setItem(key, null);
+        return _cache.cache.setItem(key, null);
     };
 
     return { name: name, store: store, get: (0, _fetch2.cancellable)(get), clear: clear };
 };
-
-exports.default = resource;
 
 // !! Example usage
 //

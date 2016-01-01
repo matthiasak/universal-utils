@@ -1,7 +1,7 @@
 const clone = (obj) =>
     JSON.parse(JSON.stringify(obj))
 
-const nodeCache = () => {
+export const cacheCreator = () => {
 
     let {REDIS_URL} = process.env
 
@@ -78,5 +78,4 @@ const nodeCache = () => {
     }
 }
 
-const c = nodeCache()
-export default c
+export const cache = nodeCache()

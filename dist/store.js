@@ -21,6 +21,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.store = undefined;
 
 var _fetch = require('./fetch');
 
@@ -49,7 +50,7 @@ var clone = function clone(obj) {
  * - remove()
  */
 
-var store = function store() {
+var store = exports.store = function store() {
     var _state2 = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
     // might have to be changed back to Set()
@@ -111,8 +112,6 @@ var store = function store() {
 
     return _extends({}, instance, { dispatch: (0, _fetch.cancellable)(instance.dispatch) });
 };
-
-exports.default = store;
 
 /*
 // Example usage:

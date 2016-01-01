@@ -1,6 +1,6 @@
 const s = window.localStorage
 
-const cache = () => {
+export const cacheCreator = () => {
 
     const getItem = (key, expire=false) => {
         const data = s.getItem(key)
@@ -35,5 +35,4 @@ const cache = () => {
     return { getItem, setItem, clearAll }
 }
 
-const c = cache()
-export default c
+export const cache = cacheCreator()

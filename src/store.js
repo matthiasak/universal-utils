@@ -40,7 +40,7 @@ const clone = (obj) => JSON.parse(JSON.stringify(obj))
  * - remove()
  */
 
-const store = (state={}) => {
+export const store = (state={}) => {
     // might have to be changed back to Set()
     // if subscribers get garbage collected
     //
@@ -69,8 +69,6 @@ const store = (state={}) => {
 
     return { ...instance, dispatch: cancellable(instance.dispatch) }
 }
-
-export default store
 
 
 /*

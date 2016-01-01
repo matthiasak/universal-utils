@@ -19,7 +19,7 @@ The `fetch()` module batches in-flight requests, so if at any point in time, any
  *
  * f: function(url,options): Promise
  */
-var batch = function batch(f) {
+var batch = exports.batch = function batch(f) {
     var inflight = {};
 
     return function (url) {
@@ -50,7 +50,7 @@ var batch = function batch(f) {
 // use this until Promise#abort() is a method, or the WHATWG figures
 // out a proper approach/implementation
 require('isomorphic-fetch');
-var cancellable = function cancellable(f) {
+var cancellable = exports.cancellable = function cancellable(f) {
     return function () {
         var result = f.apply(undefined, arguments),
             aborted = false;
@@ -71,7 +71,7 @@ var cancellable = function cancellable(f) {
     };
 };
 
-var whatWGFetch = function whatWGFetch() {
+var whatWGFetch = exports.whatWGFetch = function whatWGFetch() {
     var _global;
 
     return (_global = global).fetch.apply(_global, arguments).then(function (r) {
@@ -79,12 +79,7 @@ var whatWGFetch = function whatWGFetch() {
     });
 };
 
-var fetch = cancellable(batch(whatWGFetch));
-
-exports.whatWGFetch = whatWGFetch;
-exports.fetch = fetch;
-exports.cancellable = cancellable;
-exports.batch = batch;
+var fetch = exports.fetch = cancellable(batch(whatWGFetch));
 
 // !! usage
 // let batching_fetcher = batch(fetch) // fetch API from require('isomorphic-fetch')

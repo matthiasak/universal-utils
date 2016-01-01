@@ -2,11 +2,11 @@
 // exposing one primary method `get()`. Example code at end of file.
 
 
-import {default as s} from './store'
-import cache from './cache'
+import {store as s} from './store'
+import {cache} from './cache'
 import {batch, fetch as _fetch, cancellable} from './fetch'
 
-const resource = (config={}, defaultState={}) => {
+export const resource = (config={}, defaultState={}) => {
 
     let inflight = {}
 
@@ -70,8 +70,6 @@ const resource = (config={}, defaultState={}) => {
 
     return { name, store, get: cancellable(get), clear }
 }
-
-export default resource
 
 // !! Example usage
 //

@@ -1,5 +1,5 @@
 import {batch, fetch, cancellable} from './fetch'
-import store from './store'
+import {store} from './store'
 
 const debounce = (func, wait, timeout) =>
     (...args) => {
@@ -22,7 +22,7 @@ const debounce = (func, wait, timeout) =>
  * ]
  */
 
-const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
+export const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
     const payload = store([])
 
     // puts url,options,id on payload
@@ -70,9 +70,6 @@ const muxer = (batch_url, f=fetch, wait=60, max_buffer_size=8) => {
 
     return cancellable(get)
 }
-
-
-export default muxer
 
 // example
 // ----------

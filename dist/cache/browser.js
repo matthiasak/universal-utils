@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 var s = window.localStorage;
 
-var cache = function cache() {
+var cacheCreator = exports.cacheCreator = function cacheCreator() {
 
     var getItem = function getItem(key) {
         var expire = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
@@ -43,5 +43,4 @@ var cache = function cache() {
     return { getItem: getItem, setItem: setItem, clearAll: clearAll };
 };
 
-var c = cache();
-exports.default = c;
+var cache = exports.cache = cacheCreator();

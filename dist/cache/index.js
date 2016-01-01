@@ -10,7 +10,7 @@ var clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
 
-var nodeCache = function nodeCache() {
+var cacheCreator = exports.cacheCreator = function cacheCreator() {
     var REDIS_URL = process.env.REDIS_URL;
 
     if (REDIS_URL) {
@@ -115,5 +115,4 @@ var nodeCache = function nodeCache() {
     }
 };
 
-var c = nodeCache();
-exports.default = c;
+var cache = exports.cache = nodeCache();

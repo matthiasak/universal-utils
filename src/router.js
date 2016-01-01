@@ -2,7 +2,7 @@
 //
 // Example usage at end of this file.
 
-const router = (routes, routeTransform) => {
+export const router = (routes, routeTransform) => {
     const hashroutes = Object.keys(routes).map(route => {
         let tokens = route.match(/:(\w+)/ig),
             handler = routeTransform(routes[route])
@@ -65,8 +65,6 @@ const router = (routes, routeTransform) => {
 
     return {page}
 }
-
-export default router
 
 /**
  * EXAMPLE USAGE
