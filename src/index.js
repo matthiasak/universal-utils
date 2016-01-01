@@ -8,4 +8,4 @@ import * as csp from './csp'
 import * as vdom from './vdom'
 import * as fp from './fp'
 
-module.exports = {fetch, store, resource, cache, router, mux, csp, vdom, fp}
+module.exports = {...fetch, ...store, ...resource, ...cache, ...router, ...mux, ...csp, ...vdom, ...fp}
