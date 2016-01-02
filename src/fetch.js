@@ -48,9 +48,9 @@ export const cancellable = f =>
             aborted = false
 
         let promise = new Promise((res,rej) => {
-            result.then(d => {
-                return aborted ? rej('aborted') : res(d)
-            }).catch(e => rej(e))
+            result
+                .then(d => aborted ? rej('aborted') : res(d))
+                .catch(e => rej(e))
         })
 
         promise.abort = () => aborted = true

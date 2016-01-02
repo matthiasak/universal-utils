@@ -4,10 +4,10 @@ export const cacheCreator = () => {
 
     const getItem = (key, expire=false) => {
         const data = s.getItem(key)
-        if(!d) return Promise.reject(`${key} not in cache`)
-        let expired = expire || (+new Date) > d.expiresAt
+        if(!data || !data.data) return Promise.reject(`${key} not in cache`)
+        let expired = expire || (+new Date) > data.expiresAt
         if(expired) return Promise.reject(`${key} is expired`)
-        return Promise.resolve(JSON.parse(d.data))
+        return Promise.resolve(JSON.parse(data.data))
     }
 
     const setItem = (key, data, timeout=5*60*60*1000, expiresAt=(+new Date + timeout)) => {

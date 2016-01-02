@@ -78,4 +78,4 @@ export const cacheCreator = () => {
     }
 }
 
-export const cache = nodeCache()
+export const cache = cacheCreator()

@@ -115,4 +115,4 @@ var cacheCreator = exports.cacheCreator = function cacheCreator() {
     }
 };
 
-var cache = exports.cache = nodeCache();
+var cache = exports.cache = cacheCreator();
