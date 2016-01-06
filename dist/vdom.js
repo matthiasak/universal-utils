@@ -212,13 +212,19 @@ var update = exports.update = function update() {
     }
 };
 
+var stylify = function stylify(style) {
+    return Object.keys(style).map(function (x) {
+        return x + ': ' + style[x] + ';';
+    }).join('');
+};
+
 var setAttrs = function setAttrs(_ref2, el) {
     var attrs = _ref2.attrs;
     var id = _ref2.id;
     var className = _ref2.className;
 
     attrs && Object.keys(attrs).forEach(function (attr) {
-        return attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
+        return attr === 'style' ? el.setAttribute(attr, stylify(attrs[attr])) : attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
     });
 
     var _id = attrs.id || id;

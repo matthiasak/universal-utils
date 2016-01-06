@@ -153,11 +153,17 @@ export const update = () => {
         render(fn, el)
 }
 
+const stylify = style =>
+    Object.keys(style).map(x =>
+        `${x}: ${style[x]};`).join('')
+
 const setAttrs = ({attrs, id, className},el) => {
     attrs && Object.keys(attrs).forEach(attr =>
-        (attr.indexOf('-')!==-1) ?
+        (attr === 'style') ?
+            el.setAttribute(attr, stylify(attrs[attr])) :
+        ((attr.indexOf('-')!==-1) ?
             el.setAttribute(attr, attrs[attr]) :
-            (el[attr] = attrs[attr]))
+            (el[attr] = attrs[attr])))
 
     let _id = attrs.id || id
     if(_id) el.id = _id
