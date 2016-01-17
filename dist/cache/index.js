@@ -1,11 +1,10 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-
-function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
 var clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
@@ -14,7 +13,7 @@ var cacheCreator = exports.cacheCreator = function cacheCreator() {
     var REDIS_URL = process.env.REDIS_URL;
 
     if (REDIS_URL) {
-        var _ret = (function () {
+        var _ret = function () {
             var client = require('redis').createClient(REDIS_URL);
 
             "ready,connect,error,reconnecting,end".split(',').map(function (event) {
@@ -65,11 +64,11 @@ var cacheCreator = exports.cacheCreator = function cacheCreator() {
             return {
                 v: { getItem: getItem, setItem: setItem, clearAll: clearAll }
             };
-        })();
+        }();
 
         if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
     } else {
-        var _ret2 = (function () {
+        var _ret2 = function () {
 
             var cache = {};
 
@@ -109,7 +108,7 @@ var cacheCreator = exports.cacheCreator = function cacheCreator() {
             return {
                 v: { getItem: getItem, setItem: setItem, clearAll: clearAll }
             };
-        })();
+        }();
 
         if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
     }

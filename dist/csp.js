@@ -1,5 +1,7 @@
 'use strict';
 
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
@@ -137,7 +139,7 @@ let x = channel() // create new channel()
 // for any value in the channel, pull it and log it
 x.spawn( function* (put, take) {
     while(true){
-        let vals = yield take(1, (...vals) =>
+        let [status, ...vals] = yield take(1, (...vals) =>
             vals.filter(x =>
                 typeof x === 'number' && x%2===0))
             // if not 10 items available, actor parks, waiting to be signalled again, and also find just evens
@@ -216,26 +218,57 @@ var conj = exports.conj = function conj() {
     }
 
     var x = channel(),
-        send = function send(val) {
-        return regeneratorRuntime.mark(function _callee2(put, take) {
+        send = function send() {
+        for (var _len4 = arguments.length, vals = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+            vals[_key4] = arguments[_key4];
+        }
+
+        return x.spawn(regeneratorRuntime.mark(function _callee2(p, t) {
             return regeneratorRuntime.wrap(function _callee2$(_context2) {
                 while (1) {
                     switch (_context2.prev = _context2.next) {
                         case 0:
-                            _context2.next = 2;
-                            return put(val);
-
-                        case 2:
+                            p.apply(undefined, vals);
+                        case 1:
                         case 'end':
                             return _context2.stop();
                     }
                 }
             }, _callee2, this);
-        });
+        }));
     };
 
-    channels.forEach(function (x) {
-        return x.to(send);
+    channels.forEach(function (y) {
+        return y.spawn(regeneratorRuntime.mark(function _callee3(p, t) {
+            var _t, _t2, status, val;
+
+            return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                while (1) {
+                    switch (_context3.prev = _context3.next) {
+                        case 0:
+                            if (!true) {
+                                _context3.next = 9;
+                                break;
+                            }
+
+                            _t = t();
+                            _t2 = _slicedToArray(_t, 2);
+                            status = _t2[0];
+                            val = _t2[1];
+                            _context3.next = 7;
+                            return val && send(val);
+
+                        case 7:
+                            _context3.next = 0;
+                            break;
+
+                        case 9:
+                        case 'end':
+                            return _context3.stop();
+                    }
+                }
+            }, _callee3, this);
+        }));
     });
 
     return x;
