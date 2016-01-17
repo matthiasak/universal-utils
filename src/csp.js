@@ -88,7 +88,7 @@ let x = channel() // create new channel()
 // for any value in the channel, pull it and log it
 x.spawn( function* (put, take) {
     while(true){
-        let vals = yield take(1, (...vals) =>
+        let [status, ...vals] = yield take(1, (...vals) =>
             vals.filter(x =>
                 typeof x === 'number' && x%2===0))
             // if not 10 items available, actor parks, waiting to be signalled again, and also find just evens
@@ -144,13 +144,16 @@ c1.spawn(function* (p,t){
 
 export const conj = (...channels) => {
     const x = channel(),
-        send = val => {
-            return function* (put,take){
-                yield put(val)
-            }
-        }
+        send = (...vals) =>
+            x.spawn(function* (p,t){ p(...vals) })
 
-    channels.forEach(x => x.to(send))
+    channels.forEach(y =>
+        y.spawn(function*(p,t){
+            while(true){
+                let [status, val] = t()
+                yield (val && send(val))
+            }
+        }))
 
     return x
 }
