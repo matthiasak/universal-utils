@@ -14,6 +14,11 @@ var clone = exports.clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
 
+var eq = exports.eq = function eq(a, b) {
+    if (a === undefined || b === undefined) return false;
+    return JSON.stringify(a) === JSON.stringify(b);
+};
+
 var each = exports.each = function each(arr, fn) {
     for (var i = 0, len = arr.length; i < len; i++) {
         fn(arr[i], i, arr);
