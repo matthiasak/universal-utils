@@ -218,7 +218,7 @@ textarea {
 
 const app = () => {
     let u = universalUtils,
-        {m, mount, update, qs} = u,
+        {m, mount, update, qs, comp, apply, transform, insert, remove, retain} = u,
         stream = ''
 
     const edit = (val='') =>
@@ -232,7 +232,7 @@ const app = () => {
             // log([stream, val, v])
 
             if(difflen === 0) {
-                // log('length same, but content may have changed')
+                log('length same, but content may have changed - TODO')
             } else if(difflen < 0){
                 log('content deleted', [start,end], difflen)
                 stream = apply(val, comp(
@@ -258,7 +258,7 @@ const app = () => {
     const form = () => {
         return [
             m('style', {type: 'text/css', config: el => el.innerText=css}),
-            m('form', m('textarea', {rows: 5, onkeyup:t1})),
+            m('form', m('textarea', {rows: 5, onkeyup:t1, value:stream, placeholder:'type here'})),
             m('form', m('textarea#a', {rows: 5, value:stream}))
         ]
     }
