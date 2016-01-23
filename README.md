@@ -27,21 +27,23 @@ Matthew Keas, [@matthiasak](https://twitter.com/@matthiasak)
 
 #### What and Why?
 
-These are tiny utilities that, while limiting in API "surface area", pack a lot of punch. By having tiny modules that provide a very scoped feature, I have been able to compose wrappers and wrappers (around wrappers) which let me configure my code to an exact need and specification, all the while keeping modules testable and running at lightning speed.
+These are **tiny** utilities that limit API "surface area" yet __pack a lot of punch__. Each of them represents a use-case from popular libraries, but condensed into very modular, reusable parts.
 
-Functionally-oriented programming is all the rage these days, but in this post I want to emphasize that functional programming is a subset of a more important overarching programming paradigm: compositional programming.
+By having tiny modules that provide a highly scoped feature-set, I have been able to compose and reuse elements of functional programming, and create and abstract wrappers around functions, and wrappers around other wrappers. This lets me configure my code to an exact need and specification, all the while keeping modules testable and running at lightning speed.
+
+Functionally-oriented code is all the rage these days, but in this post I want to emphasize that functional programming is a subset of a more important overarching programming paradigm: compositional programming.
 
 If you've ever used Unix pipes, you'll understand the importance and flexibility of composing small reusable programs to get powerful and emergent behaviors. Similarly, if you program functionally, you'll know how cool it is to compose a bunch of small reusable functions into a fully featured program.
 
-#### How to learn this library
+#### How to learn this dictionary of microlibs
 
 Since each file in this library is an abstraction of some sort, I will address the simplest pieces first, and then work my way up to the most complex parts. Learn how to use these utilities by following along in this order:
 
-1. [package.json](package.json) - take a look at what libraries are installed by default when you require this package
-2. [index.js](src/index.js) - everything in this repo is simply an exported module by index.js
-3. [fetch.js](src/fetch.js) - learn how a single fetch() function can be used to reuse in-flight network requests to the same URL
-4. [store.js](src/store.js) - learn how to make a simple "flux-like", "redux-like" event-driven store
-5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty programs into fewer requests
+1. [package.json](package.json) - take a look at what libraries are installed by default when you require this package.
+2. [index.js](src/index.js) - everything in this repo is simply an exported module by index.js.
+3. [fetch.js](src/fetch.js) - learn how a single fetch() function can be used to reuse in-flight network requests to the same URL.
+4. [store.js](src/store.js) - learn how to make a simple "flux-like", "redux-like" event-driven store.
+5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty programs into fewer requests.
 6. [cache](src/cache) - observe the API of cache implementations... just two methods with similar signatures:
 
     - `getItem(key, expire=false): Promise`
@@ -52,8 +54,9 @@ Since each file in this library is an abstraction of some sort, I will address t
 7. [resource.js](src/resource.js) - learn how to wrap a store, muxer, fetcher, cache, and other configurations into a universal wrapper that can automatically keep cached API requests in both the client or server.
 8. [router.js](src/router.js) - The only non-universal piece of code in this repo... this is a simple routing library that can be used in lieue of larger, more verbose libraries and implementations out there like page.js or Backbone's `Backbone.Router()`.
 9. [csp.js](src/csp.js) - learn how to use a simple `channel()` implementation for using simple go-like coroutines that can `put()` and `take()` values into and out of the channel.
-10. [fp.js](src/fp.js) - learn about some more functional-esque approaches to problem solving, including the use transducers
-11. [vdom.js](src/vdom.js) - learn about an ultra tiny, minimal weight and shallow API VDOM implementation (currently Work In Progress)
+10. [fp.js](src/fp.js) - learn about some more functional-esque approaches to problem solving, including the use of transducers.
+11. [vdom.js](src/vdom.js) - learn about an ultra tiny, minimal weight and shallow API VDOM implementation.
+12. [ot.js](src/ot.js) - learn how to share and apply micro-transforms as chronological changes b/w multiple data sources (i.e. build live editors like Google Docs). Combine this "opchain" engine with channels, and you can have 'over-the-wire' live editing much like Google Docs provides.
 
 #### License
 
