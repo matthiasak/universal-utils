@@ -7,19 +7,11 @@
 
 Small functional problem-solving, event, state-management, and caching utilities.
 
-- a universal caching mechanism that can cache to WebSQL, IndexedDB, or Local Storage in the browser, or to memory and redis in node
-- a universal `batch()` wrapper that can batch in-flight requests to the same URL, meaning simultaneous requests to the same URL will be resolved by a single network request
-- a universal "auto-batched" XMLHTTPRequest `fetch()` method that returns ES6 Promises
-- a universal `mux()` wrapper that can multiplex requests from one application to another ("mux" 10 browser-side network requests into 1 request to be sent to the server)
-- a universal `store()` that maintains immutable pure JSON state (**NOTE: can only have Objects and Arrays, no custom constructors stored in it**) and implements an asynchronous flux/redux pattern that can chain reducer functions together to represent state
-- a universal `resource()` that fetches, batches, caches, and maintains an internal store of data associated with a particular resource / model / or API endpoint
-- a small browser-side `router()` that handles `hashchange` events and maps them to callbacks
-
 #### How to get started
 
 1. start your own node project, then `npm i -S universal-utils`
 2. this package is compiled to es5, so you don't need to worry about the Babel require hook, or anything of the sort... just do...
-3. `import {cache, fetch, store, resource, router, batch, mux} from 'universal-utils'` to use this package in server or client-side
+3. `import * as utils from 'universal-utils'` to use this package in server or client-side
 
 #### Who?
 
@@ -41,9 +33,9 @@ Since each file in this library is an abstraction of some sort, I will address t
 
 1. [package.json](package.json) - take a look at what libraries are installed by default when you require this package.
 2. [index.js](src/index.js) - everything in this repo is simply an exported module by index.js.
-3. [fetch.js](src/fetch.js) - learn how a single fetch() function can be used to reuse in-flight network requests to the same URL.
-4. [store.js](src/store.js) - learn how to make a simple "flux-like", "redux-like" event-driven store.
-5. [mux.js](src/mux.js) - learn how to batch requests together into a single network request, given to an API server to help multiplex chatty programs into fewer requests.
+3. [fetch.js](src/fetch.js) - learn how a single `fetch()` function can be used to reuse in-flight network requests to the same URL.
+4. [store.js](src/store.js) - a universal `store()` that maintains immutable pure JSON state (**NOTE: can only have Objects and Arrays, no custom constructors stored in it**) and implements an asynchronous flux/redux pattern that can chain reducer functions together to represent state; learn how to make a simple "flux-like", "redux-like" event-driven `store()`.
+5. [mux.js](src/mux.js) - a universal `mux()` wrapper that can multiplex requests from one application to another ("mux" 10 browser-side network requests into 1 request to be sent to the server); learn how to batch requests together into a single network request, given to an API server to help multiplex chatty programs into fewer requests.
 6. [cache](src/cache) - observe the API of cache implementations... just two methods with similar signatures:
 
     - `getItem(key, expire=false): Promise`
