@@ -1,6 +1,11 @@
 export const clone = obj =>
     JSON.parse(JSON.stringify(obj))
 
+export const eq = (a,b) => {
+    if(a === undefined || b === undefined) return false
+    return JSON.stringify(a) === JSON.stringify(b)
+}
+
 export const each = (arr,fn) => {
     for(var i = 0, len = arr.length; i<len; i++)
         fn(arr[i], i, arr)

@@ -7,5 +7,6 @@ import * as mux from './mux'
 import * as csp from './csp'
 import * as vdom from './vdom'
 import * as fp from './fp'
+import * as ot from './ot'
 
-module.exports = {...fetch, ...store, ...resource, ...cache, ...router, ...mux, ...csp, ...vdom, ...fp}
+module.exports = {...fetch, ...store, ...resource, ...cache, ...router, ...mux, ...csp, ...vdom, ...fp, ...ot}
