@@ -1,16 +1,18 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 var clone = function clone(obj) {
     return JSON.parse(JSON.stringify(obj));
 };
 
 var cacheCreator = exports.cacheCreator = function cacheCreator() {
     var REDIS_URL = process.env.REDIS_URL;
+
 
     if (REDIS_URL) {
         var _ret = function () {

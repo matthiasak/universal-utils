@@ -23,47 +23,55 @@
 const raf = cb => requestAnimationFrame ? requestAnimationFrame(cb) : setTimeout(cb,0)
 
 export const channel = () => {
-    let c = [],
-        channel_closed = false,
-        actors = []
 
-    const not = (c, b) => c.filter(a => a !== b),
-        each = (c, fn) => c.forEach(fn),
-        removeFrom = (a,b) => b.reduce((acc,v) =>
-            (a.indexOf(v) === -1) ? [...acc, v] : acc, [])
+    let c = [], // channel data is a queue; first in, first out
+        channel_closed = false, // is channel closed?
+        runners = [] // list of iterators to run through
 
-    const put = (...vals) => {
-            c = [...vals, ...c]
-            return ["park", ...c]
+    const not = (c, b) => c.filter(a => a !== b), // filter for "not b"
+        each = (c, fn) => c.forEach(fn) // forEach...
+
+    const put = (...vals) => { // put(1,2,3)
+            c = [...vals, ...c] // inserts vals to the front of c
+            return ["park", ...c] // park this iterator with this data
         },
-        take = (x=1, taker=(...vals)=>vals) => {
-            c = taker(...c)
-            let diff = c.length - x
+        take = (x=1, taker=(...vals)=>vals) => { // take(numItems, mapper)
+            c = taker(...c) // map/filter for certain values
+            let diff = c.length - x // get the last x items
             if(diff < 0) return ['park']
-            const vals = c.slice(c.length-x).reverse()
-            c = c.slice(0, c.length-x)
-            return [ vals.length !== 0 ? 'continue' : 'park', ...vals ]
+            const vals = c.slice(diff).reverse() // last x items
+            c = c.slice(0, diff) // remove those x items from channel
+            return [ vals.length !== 0 ? 'continue' : 'park', ...vals ] // pipe dat aout from channel
         },
-        awake = (run) => each(not(actors, run), a => a()),
-        status = (next, actor) => {
+        awake = (run) => each(not(runners, run), a => a()), // awake other runners
+        status = (next, run) => { // iterator status, runner => run others if not done
             const {done, value} = next
-            if(done) actors = not(actors, actor)
-            return value || ['park']
+            if(done) runners = not(runners, run) // if iterator done, filter it out
+            return value || ['park'] // return value (i.e. [state, ...nums]) or default ['park']
         },
-        actor = iter => {
+        actor = iter => { // actor returns a runner that next()'s the iterator
             let prev = []
-            const run = () => {
-                if(channel_closed) return (actors = [])
-                const [state, ...vals] = status(iter.next(prev), run)
-                prev = vals
-                raf((state === 'continue') ? run : cb)
-            }, cb = awake.bind(null, run)
-            return run
+
+            const runner = () => {
+                if(channel_closed)
+                    return (runners = []) // channel closed? delete runners
+
+                const [state, ...vals] =
+                      status(iter.next(prev), runner) // pass values to iterator, iter.next(), and store those new vals from status()
+
+                prev = vals; // store new vals
+                // raf
+                ((state === 'continue') ? runner : cb)() // if continue, keep running, else awaken all others except runner
+            }
+
+            const cb = awake.bind(null, runner) // awake all runners except runner
+
+            return runner
         },
         spawn = gen => {
-            const _actor = actor(gen(put, take))
-            actors = [...actors, _actor]
-            _actor()
+            const runner = actor(gen(put, take))
+            runners = [...runners, runner]
+            runner()
         }
 
     return {

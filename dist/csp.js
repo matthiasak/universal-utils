@@ -1,10 +1,10 @@
 'use strict';
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 function _toArray(arr) { return Array.isArray(arr) ? arr : Array.from(arr); }
 
@@ -37,31 +37,31 @@ var raf = function raf(cb) {
 };
 
 var channel = exports.channel = function channel() {
+
     var c = [],
-        channel_closed = false,
-        actors = [];
+        // channel data is a queue; first in, first out
+    channel_closed = false,
+        // is channel closed?
+    runners = []; // list of iterators to run through
 
     var not = function not(c, b) {
         return c.filter(function (a) {
             return a !== b;
         });
     },
-        each = function each(c, fn) {
+        // filter for "not b"
+    each = function each(c, fn) {
         return c.forEach(fn);
-    },
-        removeFrom = function removeFrom(a, b) {
-        return b.reduce(function (acc, v) {
-            return a.indexOf(v) === -1 ? [].concat(_toConsumableArray(acc), [v]) : acc;
-        }, []);
-    };
+    }; // forEach...
 
     var put = function put() {
         for (var _len = arguments.length, vals = Array(_len), _key = 0; _key < _len; _key++) {
             vals[_key] = arguments[_key];
         }
 
-        c = [].concat(vals, _toConsumableArray(c));
-        return ["park"].concat(_toConsumableArray(c));
+        // put(1,2,3)
+        c = [].concat(vals, _toConsumableArray(c)); // inserts vals to the front of c
+        return ["park"].concat(_toConsumableArray(c)); // park this iterator with this data
     },
         take = function take() {
         var x = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
@@ -72,49 +72,56 @@ var channel = exports.channel = function channel() {
 
             return vals;
         } : arguments[1];
-
-        c = taker.apply(undefined, _toConsumableArray(c));
-        var diff = c.length - x;
+        // take(numItems, mapper)
+        c = taker.apply(undefined, _toConsumableArray(c)); // map/filter for certain values
+        var diff = c.length - x; // get the last x items
         if (diff < 0) return ['park'];
-        var vals = c.slice(c.length - x).reverse();
-        c = c.slice(0, c.length - x);
-        return [vals.length !== 0 ? 'continue' : 'park'].concat(_toConsumableArray(vals));
+        var vals = c.slice(diff).reverse(); // last x items
+        c = c.slice(0, diff); // remove those x items from channel
+        return [vals.length !== 0 ? 'continue' : 'park'].concat(_toConsumableArray(vals)); // pipe dat aout from channel
     },
         awake = function awake(run) {
-        return each(not(actors, run), function (a) {
+        return each(not(runners, run), function (a) {
             return a();
         });
     },
-        status = function status(next, actor) {
+        // awake other runners
+    status = function status(next, run) {
+        // iterator status, runner => run others if not done
         var done = next.done;
         var value = next.value;
 
-        if (done) actors = not(actors, actor);
-        return value || ['park'];
+        if (done) runners = not(runners, run); // if iterator done, filter it out
+        return value || ['park']; // return value (i.e. [state, ...nums]) or default ['park']
     },
         actor = function actor(iter) {
+        // actor returns a runner that next()'s the iterator
         var prev = [];
-        var run = function run() {
-            if (channel_closed) return actors = [];
 
-            var _status = status(iter.next(prev), run);
+        var runner = function runner() {
+            if (channel_closed) return runners = []; // channel closed? delete runners
+
+            var _status = status(iter.next(prev), runner);
 
             var _status2 = _toArray(_status);
 
             var state = _status2[0];
 
-            var vals = _status2.slice(1);
+            var vals = _status2.slice(1); // pass values to iterator, iter.next(), and store those new vals from status()
 
-            prev = vals;
-            raf(state === 'continue' ? run : cb);
-        },
-            cb = awake.bind(null, run);
-        return run;
+            prev = vals; // store new vals
+            // raf
+            (state === 'continue' ? runner : cb)(); // if continue, keep running, else awaken all others except runner
+        };
+
+        var cb = awake.bind(null, runner); // awake all runners except runner
+
+        return runner;
     },
         spawn = function spawn(gen) {
-        var _actor = actor(gen(put, take));
-        actors = [].concat(_toConsumableArray(actors), [_actor]);
-        _actor();
+        var runner = actor(gen(put, take));
+        runners = [].concat(_toConsumableArray(runners), [runner]);
+        runner();
     };
 
     return {

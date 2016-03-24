@@ -1,12 +1,12 @@
 'use strict';
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`),
-// exposing one primary method `get()`. Example code at end of file.
-
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.resource = undefined;
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // The `resource()` module is a mechanism that wraps around the previous modules (`fetch()`, `cache()`, `store()`),
+// exposing one primary method `get()`. Example code at end of file.
 
 var _store = require('./store');
 
@@ -19,6 +19,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var resource = exports.resource = function resource() {
     var config = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var defaultState = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
 
     var inflight = {};
 
