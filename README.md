@@ -44,11 +44,12 @@ Since each file in this library is an abstraction of some sort, I will address t
     Based on whether the browser or node is `require()`ing this folder, the API will let you cache data in WebSQL/localstorage (browser) or Redis/in-memory (node).
 
 7. [resource.js](src/resource.js) - learn how to wrap a store, muxer, fetcher, cache, and other configurations into a universal wrapper that can automatically keep cached API requests in both the client or server.
-8. [router.js](src/router.js) - The only non-universal piece of code in this repo... this is a simple routing library that can be used in lieue of larger, more verbose libraries and implementations out there like page.js or Backbone's `Backbone.Router()`.
+8. [router-alt.js](src/router-alt.js) - This is a simple routing library that can be used in lieue of larger, more verbose libraries and implementations out there like page.js or Backbone's `Backbone.Router()`. See also [router.js](src/router.js), an older version.
 9. [csp.js](src/csp.js) - learn how to use a simple `channel()` implementation for using simple go-like coroutines that can `put()` and `take()` values into and out of the channel.
 10. [fp.js](src/fp.js) - learn about some more functional-esque approaches to problem solving, including the use of transducers.
 11. [vdom.js](src/vdom.js) - learn about an ultra tiny, minimal weight and shallow API VDOM implementation.
 12. [ot.js](src/ot.js) - learn how to share and apply micro-transforms as chronological changes b/w multiple data sources (i.e. build live editors like Google Docs). Combine this "opchain" engine with channels, and you can have 'over-the-wire' live editing much like Google Docs provides.
+13. [hamt.js](src/hamt.js) - learn about Hash Array Mapped Tries and persistent data structures in this ultra-minimal implementation of `list`'s and `hashmap`'s with a backing persistent data structure.
 
 #### License
 
