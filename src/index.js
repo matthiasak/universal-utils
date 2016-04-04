@@ -9,5 +9,6 @@ import * as vdom from './vdom'
 import * as fp from './fp'
 import * as ot from './ot'
 import * as lazy from './lazy'
+import * as hamt from './hamt'
 
 module.exports = {fetch, store, resource, cache, router, mux, csp, vdom, fp, ot, lazy, hamt}
