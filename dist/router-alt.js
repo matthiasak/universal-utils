@@ -4,15 +4,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
@@ -87,44 +79,27 @@ var router = exports.router = function router(routes) {
 //         }
 //     }
 
-var Router = exports.Router = function (_Component) {
-    _inherits(Router, _Component);
+// export class Router extends Component {
+//     constructor(...a){
+//         super(...a)
 
-    function Router() {
-        var _Object$getPrototypeO;
+//         let p = this.props
 
-        _classCallCheck(this, Router);
+//         this.state = {
+//             routes: p.routes || {},
+//             default: p.default || '/'
+//         }
 
-        for (var _len = arguments.length, a = Array(_len), _key = 0; _key < _len; _key++) {
-            a[_key] = arguments[_key];
-        }
+//         this.router = router(this.state.routes, (el, props) => {
+//             this.current = el
+//         })
 
-        var _this = _possibleConstructorReturn(this, (_Object$getPrototypeO = Object.getPrototypeOf(Router)).call.apply(_Object$getPrototypeO, [this].concat(a)));
-
-        var p = _this.props;
-
-        _this.state = {
-            routes: p.routes || {},
-            default: p.default || '/'
-        };
-
-        _this.router = router(_this.state.routes, function (el, props) {
-            _this.current = el;
-        });
-
-        _this.router.trigger(_this.state.default);
-        return _this;
-    }
-
-    _createClass(Router, [{
-        key: 'render',
-        value: function render() {
-            return this.current();
-        }
-    }]);
-
-    return Router;
-}(Component);
+//         this.router.trigger(this.state.default)
+//     }
+//     render(){
+//         return this.current()
+//     }
+// }
 
 //     DOM.render(<Router routes={{
 //         '/': () => <Home/>

@@ -51,27 +51,27 @@ export const router = (routes, fn=(a,b)=>a(b)) => {
 //         }
 //     }
 
-    export class Router extends Component {
-        constructor(...a){
-            super(...a)
+    // export class Router extends Component {
+    //     constructor(...a){
+    //         super(...a)
 
-            let p = this.props
+    //         let p = this.props
 
-            this.state = {
-                routes: p.routes || {},
-                default: p.default || '/'
-            }
+    //         this.state = {
+    //             routes: p.routes || {},
+    //             default: p.default || '/'
+    //         }
 
-            this.router = router(this.state.routes, (el, props) => {
-                this.current = el
-            })
+    //         this.router = router(this.state.routes, (el, props) => {
+    //             this.current = el
+    //         })
 
-            this.router.trigger(this.state.default)
-        }
-        render(){
-            return this.current()
-        }
-    }
+    //         this.router.trigger(this.state.default)
+    //     }
+    //     render(){
+    //         return this.current()
+    //     }
+    // }
 
 //     DOM.render(<Router routes={{
 //         '/': () => <Home/>
