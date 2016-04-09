@@ -6,26 +6,9 @@ Object.defineProperty(exports, "__esModule", {
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var pool = function pool() {
-    var pool = [];
-
-    var get = function get() {
-        return pool.length ? pool.shift() : {};
-    };
-
-    var recycle = function recycle(obj) {
-        Object.keys(obj).forEach(function (k) {
-            return delete obj[k];
-        });
-        pool.push(obj);
-    };
-
-    return { get: get, recycle: recycle };
-};
-
-var POOL = pool();
 
 var simpleRenderingMode = false;
 
@@ -43,7 +26,7 @@ var parseSelector = function parseSelector(s) {
         tagreg = tagName_regex().exec(s),
         tag = tagreg && tagreg.slice(1)[0],
         reg = class_id_regex(),
-        vdom = POOL.get();
+        vdom = Object.create(null);
 
     if (tag) s = s.substr(tag.length);
     vdom.className = '';
@@ -68,7 +51,7 @@ var debounce = exports.debounce = function debounce(func, wait, immediate, timeo
         };
         var callNow = immediate && !timeout;
         clearTimeout(timeout);
-        timeout = setTimeout(later, wait || 200);
+        timeout = setTimeout(later, wait || 0);
         callNow && func.apply(undefined, args);
     };
 };
@@ -78,11 +61,11 @@ var m = exports.m = function m(selector) {
         children[_key2 - 2] = arguments[_key2];
     }
 
-    var attrs = arguments.length <= 1 || arguments[1] === undefined ? POOL.get() : arguments[1];
+    var attrs = arguments.length <= 1 || arguments[1] === undefined ? Object.create(null) : arguments[1];
 
-    if (attrs.tag || !(attrs instanceof Object) || attrs instanceof Array || attrs instanceof Function) {
+    if (attrs.tag || !((typeof attrs === 'undefined' ? 'undefined' : _typeof(attrs)) === 'object') || attrs instanceof Array || attrs instanceof Function) {
         if (attrs instanceof Array) children.unshift.apply(children, _toConsumableArray(attrs));else children.unshift(attrs);
-        attrs = POOL.get();
+        attrs = Object.create(null);
     }
     var vdom = parseSelector(selector);
     if (children.length) vdom.children = children;
@@ -101,7 +84,7 @@ var html = exports.html = function html(vdom) {
     if (vdom instanceof Array) return vdom.map(function (c) {
         return html(c);
     }).join(' ');
-    if (!(vdom instanceof Object) || Object.getPrototypeOf(vdom) !== Object.prototype) return vdom;
+    if (!((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object') || Object.getPrototypeOf(vdom) !== Object.prototype) return vdom;
 
     var tag = vdom.tag;
     var id = vdom.id;
@@ -116,13 +99,14 @@ var html = exports.html = function html(vdom) {
     // TODO: figure out wtf todo here?
     // maybe just never use these, only use html() on server rendering?
     var events = stripEvents(vdom);
-    var _attrs = Object.keys(attrs || POOL.get()).filter(function (x) {
-        return reservedAttrs.indexOf(x) === -1;
-    }).reduce(function (a, v, i, arr) {
-        return a + ' ' + v + '="' + attrs[v] + '"';
-    }, '');
+    var _attrs = '';
+    for (var i in attrs || Object.create(null)) {
+        if (reservedAttrs.indexOf(x) === -1) {
+            _attrs += ' ' + i + '="' + attrs[i] + '"';
+        }
+    }
 
-    POOL.recycle(vdom);
+    // POOL.recycle(vdom)
 
     return '<' + tag + ' ' + _id + ' ' + _class + ' ' + _attrs + ' ' + (!children ? '/' : '') + '>' + closing;
 };
@@ -135,18 +119,18 @@ var rAF = exports.rAF = global.document && (requestAnimationFrame || webkitReque
 var stripEvents = function stripEvents(_ref) {
     var attrs = _ref.attrs;
 
+    var a = Object.create(null);
+
     if (attrs) {
-        var a = POOL.get();
         for (var name in attrs) {
             if (name[0] === 'o' && name[1] === 'n') {
                 a[name] = attrs[name];
                 delete attrs[name];
             }
         }
-        return a;
     }
 
-    return POOL.get();
+    return a;
 };
 
 var applyEvents = function applyEvents(events, el) {
@@ -159,11 +143,17 @@ var applyEvents = function applyEvents(events, el) {
 };
 
 var flatten = function flatten(arr) {
-    return (!(arr instanceof Array) ? [arr] : arr).reduce(function (a, v) {
-        // TODO, maybe add [arr] here?
-        v instanceof Array ? a.push.apply(a, _toConsumableArray(flatten(v))) : a.push(v);
-        return a;
-    }, []);
+    var a = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+
+    for (var i = 0, len = arr.length; i < len; i++) {
+        var v = arr[i];
+        if (!(v instanceof Array)) {
+            a.push(v);
+        } else {
+            flatten(v, a);
+        }
+    }
+    return a;
 };
 
 var EVENTS = 'mouseover,mouseout,wheel,mousemove,blur,focus,click,abort,afterprint,animationend,animationiteration,animationstart,beforeprint,canplay,canplaythrough,change,contextmenu,dblclick,drag,dragend,dragenter,dragleave,dragover,dragstart,drop,durationchange,emptied,ended,error,load,input,invalid,keydown,keypress,keyup,loadeddata,loadedmetadata,mousedown,mouseenter,mouseleave,mouseup,pause,pointercancel,pointerdown,pointerenter,pointerleave,pointermove,pointerout,pointerover,pointerup,play,playing,ratechange,reset,resize,scroll,seeked,seeking,select,selectstart,selectionchange,show,submit,timeupdate,touchstart,touchend,touchcancel,touchmove,touchenter,touchleave,transitionend,volumechange,waiting'.split(',').map(function (x) {
@@ -186,7 +176,8 @@ var mount = exports.mount = function mount(fn, el) {
 };
 
 var render = debounce(function (fn, el) {
-    return simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el.children[0], el);
+    if (simpleRenderingMode) return simpleApply(fn, el);
+    applyUpdates(fn, el.children[0], el);
 }, 16.6);
 
 var update = exports.update = function update() {
@@ -220,9 +211,11 @@ var update = exports.update = function update() {
 };
 
 var stylify = function stylify(style) {
-    return Object.keys(style).map(function (x) {
-        return x + ': ' + style[x] + ';';
-    }).join('');
+    var s = '';
+    for (var i in style) {
+        s += i + ':' + style[i] + ';';
+    }
+    return s;
 };
 
 var setAttrs = function setAttrs(_ref2, el) {
@@ -230,9 +223,15 @@ var setAttrs = function setAttrs(_ref2, el) {
     var id = _ref2.id;
     var className = _ref2.className;
 
-    attrs && Object.keys(attrs).forEach(function (attr) {
-        return attr === 'style' ? el.setAttribute(attr, stylify(attrs[attr])) : attr.indexOf('-') !== -1 ? el.setAttribute(attr, attrs[attr]) : el[attr] = attrs[attr];
-    });
+    if (attrs) {
+        for (var attr in attrs) {
+            if (attr === 'style') {
+                el.style = stylify(attrs[attr]);
+            } else {
+                el[attr] = attrs[attr];
+            }
+        }
+    }
 
     var _id = attrs.id || id;
     if (_id) el.id = _id;
@@ -242,13 +241,13 @@ var setAttrs = function setAttrs(_ref2, el) {
 
 // recycle or create a new el
 var createTag = function createTag() {
-    var vdom = arguments.length <= 0 || arguments[0] === undefined ? POOL.get() : arguments[0];
+    var vdom = arguments.length <= 0 || arguments[0] === undefined ? Object.create(null) : arguments[0];
     var el = arguments[1];
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
 
     // make text nodes from primitive types
-    if (!(vdom instanceof Object)) {
+    if (!((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object')) {
         var t = document.createTextNode(vdom);
         if (el) {
             parent.insertBefore(t, el);
@@ -296,11 +295,14 @@ var simpleApply = function simpleApply(fn, el) {
 // find parent element, and remove the input element
 var removeEl = function removeEl(el) {
     if (!el) return;
-    removeEvents(el);
     el.parentElement.removeChild(el);
-    if (el.unload instanceof Array) el.map(function (x) {
-        return x();
-    });
+    removeEvents(el);
+    if (el.unload instanceof Array) {
+        var u = el.unload;
+        for (var i in u) {
+            u[i]();
+        }
+    }
 };
 
 var applyUpdates = function applyUpdates(vdom, el) {
@@ -319,19 +321,25 @@ var applyUpdates = function applyUpdates(vdom, el) {
 
     if (!_el) return;
 
-    var vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
-        el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || [];
+    if (vdom instanceof Array || vdom.children) {
+        var vdom_children = flatten(vdom instanceof Array ? vdom : vdom.children),
+            el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes;
 
-    while (el_children.length > vdom_children.length) {
-        removeEl(el_children[el_children.length - 1]);
-    }
+        while (el_children.length > vdom_children.length) {
+            removeEl(el_children[el_children.length - 1]);
+        }
 
-    for (var i = 0; i < vdom_children.length; i++) {
-        applyUpdates(vdom_children[i], el_children[i], _el);
+        for (var i = 0; i < vdom_children.length; i++) {
+            applyUpdates(vdom_children[i], el_children[i], _el);
+        }
+    } else {
+        while (_el.childNodes.length > 0) {
+            removeEl(_el.childNodes[_el.childNodes.length - 1]);
+        }
     }
 
     // currently clears/zeroes out the data prematurely, need to figure this out
-    // rAF(() => POOL.recycle(vdom))
+    // setTimeout(() => POOL.recycle(vdom), 500)
 };
 
 var qs = exports.qs = function qs() {

@@ -1,20 +1,3 @@
-const pool = () => {
-    let pool = []
-
-    const get = () => {
-        return pool.length ? pool.shift() : {}
-    }
-
-    const recycle = (obj) => {
-        Object.keys(obj).forEach(k => delete obj[k])
-        pool.push(obj)
-    }
-
-    return {get, recycle}
-}
-
-const POOL = pool()
-
 const simpleRenderingMode = false
 
 const class_id_regex = () => {
@@ -29,7 +12,7 @@ const parseSelector = s => {
         tagreg = tagName_regex().exec(s),
         tag = tagreg && tagreg.slice(1)[0],
         reg = class_id_regex(),
-        vdom = POOL.get()
+        vdom = Object.create(null)
 
     if(tag) s = s.substr(tag.length)
     vdom.className = ''
@@ -53,15 +36,15 @@ export const debounce = (func, wait, immediate, timeout) =>
         }
         var callNow = immediate && !timeout
         clearTimeout(timeout)
-        timeout = setTimeout(later, wait || 200)
+        timeout = setTimeout(later, wait || 0)
         callNow && func(...args)
     }
 
-export const m = (selector, attrs=POOL.get(), ...children) => {
-    if(attrs.tag || !(attrs instanceof Object) || attrs instanceof Array || attrs instanceof Function){
+export const m = (selector, attrs=Object.create(null), ...children) => {
+    if(attrs.tag || !(typeof attrs === 'object') || attrs instanceof Array || attrs instanceof Function){
         if(attrs instanceof Array) children.unshift(...attrs)
         else children.unshift(attrs)
-        attrs = POOL.get()
+        attrs = Object.create(null)
     }
     let vdom = parseSelector(selector)
     if(children.length)
@@ -79,7 +62,7 @@ export const m = (selector, attrs=POOL.get(), ...children) => {
 const reservedAttrs = ['className','id']
 export const html = vdom => {
     if(vdom instanceof Array) return vdom.map(c => html(c)).join(' ')
-    if(!(vdom instanceof Object) || (Object.getPrototypeOf(vdom) !== Object.prototype)) return vdom
+    if(!(typeof vdom === 'object') || (Object.getPrototypeOf(vdom) !== Object.prototype)) return vdom
 
     const {tag, id, className, attrs, children} = vdom,
         _id = `id="${(id || attrs.id || '')}"`,
@@ -88,11 +71,14 @@ export const html = vdom => {
     // TODO: figure out wtf todo here?
     // maybe just never use these, only use html() on server rendering?
     const events = stripEvents(vdom)
-    const _attrs = Object.keys(attrs || POOL.get())
-        .filter(x => reservedAttrs.indexOf(x) === -1)
-        .reduce((a,v,i,arr) => `${a} ${v}="${attrs[v]}"`,'')
+    let _attrs = ''
+    for(var i in (attrs || Object.create(null))){
+        if(reservedAttrs.indexOf(x) === -1){
+            _attrs += ` ${i}="${attrs[i]}"`
+        }
+    }
 
-    POOL.recycle(vdom)
+    // POOL.recycle(vdom)
 
     return `<${tag} ${_id} ${_class} ${_attrs} ${!children ? '/' : ''}>${closing}`
 }
@@ -106,18 +92,18 @@ export const rAF =
 
 // creatign html, strip events from DOM element... for now just deleting
 const stripEvents = ({attrs}) => {
+    let a = Object.create(null)
+
     if(attrs){
-        let a = POOL.get()
         for(var name in attrs){
             if(name[0]==='o'&&name[1]==='n') {
                 a[name] = attrs[name]
                 delete attrs[name]
             }
         }
-        return a
     }
 
-    return POOL.get()
+    return a
 }
 
 const applyEvents = (events, el, strip_existing=true) => {
@@ -127,11 +113,16 @@ const applyEvents = (events, el, strip_existing=true) => {
     }
 }
 
-const flatten = (arr) => {
-    return (!(arr instanceof Array) ? [arr] : arr).reduce((a,v) => { // TODO, maybe add [arr] here?
-        v instanceof Array ? a.push(...flatten(v)) : a.push(v)
-        return a
-    }, [])
+const flatten = (arr, a=[]) => {
+    for(var i=0,len=arr.length; i<len; i++){
+        let v = arr[i]
+        if(!(v instanceof Array)){
+            a.push(v)
+        } else {
+            flatten(v, a)
+        }
+    }
+    return a
 }
 
 const EVENTS = 'mouseover,mouseout,wheel,mousemove,blur,focus,click,abort,afterprint,animationend,animationiteration,animationstart,beforeprint,canplay,canplaythrough,change,contextmenu,dblclick,drag,dragend,dragenter,dragleave,dragover,dragstart,drop,durationchange,emptied,ended,error,load,input,invalid,keydown,keypress,keyup,loadeddata,loadedmetadata,mousedown,mouseenter,mouseleave,mouseup,pause,pointercancel,pointerdown,pointerenter,pointerleave,pointermove,pointerout,pointerover,pointerup,play,playing,ratechange,reset,resize,scroll,seeked,seeking,select,selectstart,selectionchange,show,submit,timeupdate,touchstart,touchend,touchcancel,touchmove,touchenter,touchleave,transitionend,volumechange,waiting'.split(',').map(x => 'on'+x)
@@ -151,25 +142,34 @@ export const mount = (fn, el) => {
     render(fn, el)
 }
 
-const render = debounce((fn, el) =>
-    simpleRenderingMode ? simpleApply(fn, el) : applyUpdates(fn, el.children[0], el), 16.6)
+const render = debounce((fn, el) => {
+    if(simpleRenderingMode) return simpleApply(fn, el)
+    applyUpdates(fn, el.children[0], el)
+}, 16.6)
 
 export const update = () => {
     for(let [el,fn] of mounts.entries())
         render(fn, el)
 }
 
-const stylify = style =>
-    Object.keys(style).map(x =>
-        `${x}: ${style[x]};`).join('')
+const stylify = style => {
+    let s = ''
+    for(var i in style){
+        s+=`${i}:${style[i]};`
+    }
+    return s
+}
 
 const setAttrs = ({attrs, id, className},el) => {
-    attrs && Object.keys(attrs).forEach(attr =>
-        (attr === 'style') ?
-            el.setAttribute(attr, stylify(attrs[attr])) :
-        ((attr.indexOf('-')!==-1) ?
-            el.setAttribute(attr, attrs[attr]) :
-            (el[attr] = attrs[attr])))
+    if(attrs){
+        for(var attr in attrs){
+            if(attr === 'style') {
+                el.style = stylify(attrs[attr])
+            } else {
+                el[attr] = attrs[attr]
+            }
+        }
+    }
 
     let _id = attrs.id || id
     if(_id) el.id = _id
@@ -178,10 +178,10 @@ const setAttrs = ({attrs, id, className},el) => {
 }
 
 // recycle or create a new el
-const createTag = (vdom=POOL.get(), el, parent=el&&el.parentElement) => {
+const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) => {
 
     // make text nodes from primitive types
-    if(!(vdom instanceof Object)){
+    if(!(typeof vdom === 'object')){
         let t = document.createTextNode(vdom)
         if(el){
             parent.insertBefore(t,el)
@@ -220,9 +220,12 @@ const simpleApply = (fn, el) => el.innerHTML = html(fn())
 // find parent element, and remove the input element
 const removeEl = el => {
     if(!el) return
-    removeEvents(el)
     el.parentElement.removeChild(el)
-    if(el.unload instanceof Array) el.map(x => x())
+    removeEvents(el)
+    if(el.unload instanceof Array) {
+        let u = el.unload
+        for(var i in u) u[i]()
+    }
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
@@ -240,19 +243,25 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
 
     if(!_el) return
 
-    let vdom_children = flatten(vdom instanceof Array ? vdom : vdom && vdom.children || []),
-        el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes || []
+    if(vdom instanceof Array || vdom.children){
+        let vdom_children = flatten(vdom instanceof Array ? vdom : vdom.children),
+            el_children = vdom instanceof Array ? parent.childNodes : _el.childNodes
 
-    while(el_children.length > vdom_children.length){
-        removeEl(el_children[el_children.length-1])
-    }
+        while(el_children.length > vdom_children.length){
+            removeEl(el_children[el_children.length-1])
+        }
 
-    for(let i=0; i<vdom_children.length; i++){
-        applyUpdates(vdom_children[i],el_children[i],_el)
+        for(let i=0; i<vdom_children.length; i++){
+            applyUpdates(vdom_children[i],el_children[i],_el)
+        }
+    } else {
+        while(_el.childNodes.length > 0){
+            removeEl(_el.childNodes[_el.childNodes.length-1])
+        }
     }
 
     // currently clears/zeroes out the data prematurely, need to figure this out
-    // rAF(() => POOL.recycle(vdom))
+    // setTimeout(() => POOL.recycle(vdom), 500)
 }
 
 export const qs = (s='body', el=document) => el.querySelector(s)
