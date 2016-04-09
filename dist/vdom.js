@@ -134,23 +134,28 @@ var rAF = exports.rAF = global.document && (requestAnimationFrame || webkitReque
 // creatign html, strip events from DOM element... for now just deleting
 var stripEvents = function stripEvents(_ref) {
     var attrs = _ref.attrs;
-    return attrs ? Object.keys(attrs).filter(function (x) {
-        return (/^on[a-z]/.exec(x)
-        );
-    }).reduce(function (a, name) {
-        a[name] = attrs[name];
-        delete attrs[name];
+
+    if (attrs) {
+        var a = POOL.get();
+        for (var name in attrs) {
+            if (name[0] === 'o' && name[1] === 'n') {
+                a[name] = attrs[name];
+                delete attrs[name];
+            }
+        }
         return a;
-    }, POOL.get()) : POOL.get();
+    }
+
+    return POOL.get();
 };
 
 var applyEvents = function applyEvents(events, el) {
     var strip_existing = arguments.length <= 2 || arguments[2] === undefined ? true : arguments[2];
 
     strip_existing && removeEvents(el);
-    Object.keys(events).forEach(function (name) {
-        return el[name] = events[name];
-    });
+    for (var name in events) {
+        el[name] = events[name];
+    }
 };
 
 var flatten = function flatten(arr) {
@@ -161,13 +166,15 @@ var flatten = function flatten(arr) {
     }, []);
 };
 
+var EVENTS = 'mouseover,mouseout,wheel,mousemove,blur,focus,click,abort,afterprint,animationend,animationiteration,animationstart,beforeprint,canplay,canplaythrough,change,contextmenu,dblclick,drag,dragend,dragenter,dragleave,dragover,dragstart,drop,durationchange,emptied,ended,error,load,input,invalid,keydown,keypress,keyup,loadeddata,loadedmetadata,mousedown,mouseenter,mouseleave,mouseup,pause,pointercancel,pointerdown,pointerenter,pointerleave,pointermove,pointerout,pointerover,pointerup,play,playing,ratechange,reset,resize,scroll,seeked,seeking,select,selectstart,selectionchange,show,submit,timeupdate,touchstart,touchend,touchcancel,touchmove,touchenter,touchleave,transitionend,volumechange,waiting'.split(',').map(function (x) {
+    return 'on' + x;
+});
+
 var removeEvents = function removeEvents(el) {
     // strip away event handlers on el, if it exists
     if (!el) return;
-    for (var i in el) {
-        if (/^on([a-z]+)/.exec(i)) {
-            el[i] = null;
-        }
+    for (var i in EVENTS) {
+        el[i] = null;
     }
 };
 

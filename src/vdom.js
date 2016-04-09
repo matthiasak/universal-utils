@@ -105,20 +105,26 @@ export const rAF =
       (cb => setTimeout(cb, 16.6))
 
 // creatign html, strip events from DOM element... for now just deleting
-const stripEvents = ({attrs}) =>
-    attrs ?
-        Object.keys(attrs)
-            .filter(x => /^on[a-z]/.exec(x))
-            .reduce((a, name) => {
+const stripEvents = ({attrs}) => {
+    if(attrs){
+        let a = POOL.get()
+        for(var name in attrs){
+            if(name[0]==='o'&&name[1]==='n') {
                 a[name] = attrs[name]
                 delete attrs[name]
-                return a
-            }, POOL.get()) :
-        POOL.get()
+            }
+        }
+        return a
+    }
+
+    return POOL.get()
+}
 
 const applyEvents = (events, el, strip_existing=true) => {
     strip_existing && removeEvents(el)
-    Object.keys(events).forEach(name => el[name] = events[name])
+    for(var name in events){
+        el[name] = events[name]
+    }
 }
 
 const flatten = (arr) => {
@@ -128,13 +134,13 @@ const flatten = (arr) => {
     }, [])
 }
 
+const EVENTS = 'mouseover,mouseout,wheel,mousemove,blur,focus,click,abort,afterprint,animationend,animationiteration,animationstart,beforeprint,canplay,canplaythrough,change,contextmenu,dblclick,drag,dragend,dragenter,dragleave,dragover,dragstart,drop,durationchange,emptied,ended,error,load,input,invalid,keydown,keypress,keyup,loadeddata,loadedmetadata,mousedown,mouseenter,mouseleave,mouseup,pause,pointercancel,pointerdown,pointerenter,pointerleave,pointermove,pointerout,pointerover,pointerup,play,playing,ratechange,reset,resize,scroll,seeked,seeking,select,selectstart,selectionchange,show,submit,timeupdate,touchstart,touchend,touchcancel,touchmove,touchenter,touchleave,transitionend,volumechange,waiting'.split(',').map(x => 'on'+x)
+
 const removeEvents = el => {
     // strip away event handlers on el, if it exists
     if(!el) return;
-    for(var i in el){
-        if(/^on([a-z]+)/.exec(i)) {
-            el[i] = null
-        }
+    for(var i in EVENTS){
+        el[i] = null
     }
 }
 
