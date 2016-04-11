@@ -8,7 +8,9 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+var trim = function trim(str) {
+    return str.replace(/^[\s]+/ig, '').replace(/[\s]+$/ig, '');
+};
 
 var router = exports.router = function router(routes) {
     var fn = arguments.length <= 1 || arguments[1] === undefined ? function (a, b) {
@@ -23,8 +25,6 @@ var router = exports.router = function router(routes) {
                 onError instanceof Function && onError(window.location.hash.slice(1));
             }
         });
-
-        trigger(window.location.hash.slice(1));
     };
 
     var trigger = function trigger(path) {
@@ -43,23 +43,39 @@ var router = exports.router = function router(routes) {
     };
 
     var match = function match(pattern, path) {
-        var parts = pattern.split('/').filter(function (x) {
-            return x.length;
+        var _patterns = pattern.split('/'),
+            parts = _patterns.map(function (x) {
+            switch (x[0]) {
+                case ':':
+                    return '([^/]+)';
+                case '*':
+                    return '.*';
+                default:
+                    return x;
+            }
         }),
-            _path = path.slice(1).split('/').filter(function (x) {
-            return x.length;
-        }),
-            names = parts.reduce(function (a, x) {
-            return x[0] === ':' ? [].concat(_toConsumableArray(a), [x.slice(1)]) : a;
-        }, []),
-            v = parts.map(function (x) {
-            return x[0] === ':' ? '/([^/]+)' : '/' + x;
-        }).join(''),
-            results = RegExp(v).exec(path),
-            parsed = (results || []).slice(1);
+            uris = path.split('/');
+        // names = parts.reduce((a,x) => x[0] === ':' ? [...a, x.slice(1)] : a, []),
+        // results = RegExp(v).exec(path),
+        // parsed = (results || []).slice(1)
 
-        return !results || parts.length !== _path.length ? false : names.reduce(function (a, v, i) {
-            return _extends({}, a, _defineProperty({}, v, parsed[i]));
+        for (var i = 0; i < Math.max(parts.length, uris.length); i++) {
+            var p = trim(parts[i]),
+                u = trim(uris[i]),
+                v = null;
+
+            if (p === '' || u === '') {
+                v = p === '' && u === '';
+            } else {
+                v = new RegExp(p).exec(u);
+            }
+
+            if (!v) return false;
+        }
+
+        return parts.reduce(function (a, v, i) {
+            if (v[0] === ':') return _extends({}, a, _defineProperty({}, v, uris[i]));
+            return a;
         }, {});
     };
 

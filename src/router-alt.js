@@ -1,3 +1,5 @@
+const trim = str => str.replace(/^[\s]+/ig, '').replace(/[\s]+$/ig, '')
+
 export const router = (routes, fn=(a,b)=>a(b)) => {
     let current = null
 
@@ -7,8 +9,6 @@ export const router = (routes, fn=(a,b)=>a(b)) => {
                 (onError instanceof Function) && onError(window.location.hash.slice(1))
             }
         })
-
-        trigger(window.location.hash.slice(1))
     }
 
     const trigger = path => {
@@ -27,16 +27,38 @@ export const router = (routes, fn=(a,b)=>a(b)) => {
     }
 
     const match = (pattern, path) => {
-        let parts = pattern.split('/').filter(x => x.length),
-            _path = path.slice(1).split('/').filter(x => x.length),
-            names = parts.reduce((a,x) => x[0] === ':' ? [...a, x.slice(1)] : a, []),
-            v = parts.map(x => x[0] === ':' ? '/([^/]+)' : '/'+x).join(''),
-            results = RegExp(v).exec(path),
-            parsed = (results || []).slice(1)
+        let _patterns = pattern.split('/'),
+            parts = _patterns.map(x => {
+                switch(x[0]){
+                    case ':': return '([^/]+)'
+                    case '*': return '.*'
+                    default: return x
+                }
+            }),
+            uris = path.split('/')
+            // names = parts.reduce((a,x) => x[0] === ':' ? [...a, x.slice(1)] : a, []),
+            // results = RegExp(v).exec(path),
+            // parsed = (results || []).slice(1)
 
-        return (!results || parts.length !== _path.length)
-            ? false
-            : names.reduce((a,v,i) => ({...a, [v]: parsed[i]}), {})
+        for(var i = 0; i < Math.max(parts.length, uris.length); i++){
+            let p = trim(parts[i]),
+                u = trim(uris[i]),
+                v = null
+
+            if(p === '' || u === ''){
+                v = p === '' && u === ''
+            } else {
+                v = new RegExp(p).exec(u)
+            }
+
+            if(!v) return false
+        }
+
+        return parts.reduce((a,v,i) => {
+            if(v[0] === ':')
+                return {...a, [v]: uris[i]}
+            return a
+        }, {})
     }
 
     return {
