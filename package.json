@@ -1,6 +1,6 @@
 {
   "name": "universal-utils",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "functional, event, storage, cache, and other utilities",
   "main": "dist/index.js",
   "scripts": {
