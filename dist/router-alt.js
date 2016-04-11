@@ -17,25 +17,36 @@ var router = exports.router = function router(routes) {
 
     var current = null;
 
-    var listen = function listen() {
+    var listen = function listen(onError) {
         window.addEventListener('hashchange', function () {
-            trigger(window.location.hashname.slice(1));
+            if (!trigger(window.location.hash.slice(1))) {
+                onError instanceof Function && onError(window.location.hash.slice(1));
+            }
         });
+
+        trigger(window.location.hash.slice(1));
     };
 
     var trigger = function trigger(path) {
-        Object.keys(routes).reduce(function (a, x) {
-            var v = match(x, path);
-            if (v) {
-                fn(routes[x], v);
-                return true;
+        for (var x in routes) {
+            if (routes.hasOwnProperty(x)) {
+                var v = match(x, path);
+
+                if (v) {
+                    fn(routes[x], v);
+                    return true;
+                }
             }
-            if (a) return true;
-        }, false);
+        }
+
+        return false;
     };
 
     var match = function match(pattern, path) {
         var parts = pattern.split('/').filter(function (x) {
+            return x.length;
+        }),
+            _path = path.slice(1).split('/').filter(function (x) {
             return x.length;
         }),
             names = parts.reduce(function (a, x) {
@@ -47,7 +58,7 @@ var router = exports.router = function router(routes) {
             results = RegExp(v).exec(path),
             parsed = (results || []).slice(1);
 
-        return !results ? false : names.reduce(function (a, v, i) {
+        return !results || parts.length !== _path.length ? false : names.reduce(function (a, v, i) {
             return _extends({}, a, _defineProperty({}, v, parsed[i]));
         }, {});
     };
@@ -57,7 +68,7 @@ var router = exports.router = function router(routes) {
             return !!(routes[name] = fn);
         },
         remove: function remove(name) {
-            return delete routes[name] && true;
+            return !! delete routes[name] || true;
         },
         listen: listen,
         match: match,

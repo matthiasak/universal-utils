@@ -1,36 +1,47 @@
 export const router = (routes, fn=(a,b)=>a(b)) => {
     let current = null
 
-    const listen = () => {
+    const listen = (onError) => {
         window.addEventListener('hashchange', () => {
-            trigger(window.location.hashname.slice(1))
+            if(!trigger(window.location.hash.slice(1))){
+                (onError instanceof Function) && onError(window.location.hash.slice(1))
+            }
         })
+
+        trigger(window.location.hash.slice(1))
     }
 
     const trigger = path => {
-        Object.keys(routes).reduce((a,x) => {
-            let v = match(x,path)
-            if(v){
-                fn(routes[x], v)
-                return true
+        for(let x in routes){
+            if(routes.hasOwnProperty(x)){
+                let v = match(x,path)
+
+                if(v){
+                    fn(routes[x], v)
+                    return true
+                }
             }
-            if(a) return true
-        }, false)
+        }
+
+        return false
     }
 
     const match = (pattern, path) => {
         let parts = pattern.split('/').filter(x => x.length),
+            _path = path.slice(1).split('/').filter(x => x.length),
             names = parts.reduce((a,x) => x[0] === ':' ? [...a, x.slice(1)] : a, []),
             v = parts.map(x => x[0] === ':' ? '/([^/]+)' : '/'+x).join(''),
             results = RegExp(v).exec(path),
             parsed = (results || []).slice(1)
 
-        return !results ? false : names.reduce((a,v,i) => ({...a, [v]: parsed[i]}), {})
+        return (!results || parts.length !== _path.length)
+            ? false
+            : names.reduce((a,v,i) => ({...a, [v]: parsed[i]}), {})
     }
 
     return {
         add: (name, fn) => !!(routes[name] = fn),
-        remove: name => (delete routes[name]) && true,
+        remove: name => !!(delete routes[name]) || true,
         listen,
         match,
         trigger
