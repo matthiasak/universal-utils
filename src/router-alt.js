@@ -36,9 +36,6 @@ export const router = (routes, fn=(a,b)=>a(b)) => {
                 }
             }),
             uris = path.split('/')
-            // names = parts.reduce((a,x) => x[0] === ':' ? [...a, x.slice(1)] : a, []),
-            // results = RegExp(v).exec(path),
-            // parsed = (results || []).slice(1)
 
         for(var i = 0; i < Math.max(parts.length, uris.length); i++){
             let p = trim(parts[i]),
