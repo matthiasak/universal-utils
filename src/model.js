@@ -32,7 +32,7 @@ const check = (types, required, data) => {
     return true
 }
 
-export default const Model = (...args) => {
+const Model = (...args) => {
     let types, required, logic
     args.map(x => {
         if(x instanceof Function && !logic){ logic = x }
@@ -51,6 +51,8 @@ export default const Model = (...args) => {
 
     return {isValid, whenValid}
 }
+
+export default Model
 
 /**
 Use it
