@@ -10,6 +10,6 @@ import * as fp from './fp'
 import * as ot from './ot'
 import * as lazy from './lazy'
 import * as hamt from './hamt'
-import model from './model'
+import * as model from './model'
 
 module.exports = {fetch, store, resource, cache, router, mux, csp, vdom, fp, ot, lazy, hamt, model}

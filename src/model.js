@@ -1,4 +1,4 @@
-const is = (type, value) => {
+export const is = (type, value) => {
     if(type && type.isValid instanceof Function){
         return type.isValid(value)
     } else if((type === String && ((value instanceof String) || typeof value === 'string'))
@@ -32,7 +32,7 @@ const check = (types, required, data) => {
     return true
 }
 
-const Model = (...args) => {
+export const Model = (...args) => {
     let types, required, logic
     args.map(x => {
         if(x instanceof Function && !logic){ logic = x }
@@ -51,8 +51,6 @@ const Model = (...args) => {
 
     return {isValid, whenValid}
 }
-
-export default Model
 
 /**
 Use it

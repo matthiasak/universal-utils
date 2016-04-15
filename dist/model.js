@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var is = function is(type, value) {
+var is = exports.is = function is(type, value) {
     if (type && type.isValid instanceof Function) {
         return type.isValid(value);
     } else if (type === String && (value instanceof String || typeof value === 'string') || type === Number && (value instanceof Number || typeof value === 'number') || type === Boolean && (value instanceof Boolean || typeof value === 'boolean') || type === Function && (value instanceof Function || typeof value === 'function') || type === Object && (value instanceof Object || (typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object') || type === undefined) {
@@ -38,7 +38,7 @@ var check = function check(types, required, data) {
     return true;
 };
 
-var Model = function Model() {
+var Model = exports.Model = function Model() {
     for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
         args[_key] = arguments[_key];
     }
@@ -73,8 +73,6 @@ var Model = function Model() {
 
     return { isValid: isValid, whenValid: whenValid };
 };
-
-exports.default = Model;
 
 /**
 Use it
