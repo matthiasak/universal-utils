@@ -74,6 +74,16 @@ var Model = exports.Model = function Model() {
     return { isValid: isValid, whenValid: whenValid };
 };
 
+var ArrayOf = exports.ArrayOf = function ArrayOf(M) {
+    return Model(function (t, r, data) {
+        if (!(data instanceof Array)) throw data + ' not an Array';
+        data.map(function (x) {
+            if (!is(M, x)) throw x + ' is not a model instance';
+        });
+        return true;
+    });
+};
+
 /**
 Use it
 

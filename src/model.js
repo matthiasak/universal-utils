@@ -52,6 +52,17 @@ export const Model = (...args) => {
     return {isValid, whenValid}
 }
 
+export const ArrayOf = (M) => {
+    return Model((t,r,data) => {
+        if(!(data instanceof Array)) throw `${data} not an Array`
+        data.map(x => {
+            if(!is(M, x))
+                throw `${x} is not a model instance`
+        })
+        return true
+    })
+}
+
 /**
 Use it
 
