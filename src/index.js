@@ -11,5 +11,6 @@ import * as ot from './ot'
 import * as lazy from './lazy'
 import * as hamt from './hamt'
 import * as model from './model'
+import * as meta from './meta'
 
-module.exports = {fetch, store, resource, cache, router, mux, csp, vdom, fp, ot, lazy, hamt, model}
+module.exports = {fetch, store, resource, cache, router, mux, csp, vdom, fp, ot, lazy, hamt, model, meta}

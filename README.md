@@ -50,6 +50,8 @@ Since each file in this library is an abstraction of some sort, I will address t
 11. [vdom.js](src/vdom.js) - learn about an ultra tiny, minimal weight and shallow API VDOM implementation.
 12. [ot.js](src/ot.js) - learn how to share and apply micro-transforms as chronological changes b/w multiple data sources (i.e. build live editors like Google Docs). Combine this "opchain" engine with channels, and you can have 'over-the-wire' live editing much like Google Docs provides.
 13. [hamt.js](src/hamt.js) - learn about Hash Array Mapped Tries and persistent data structures in this ultra-minimal implementation of `list`'s and `hashmap`'s with a backing persistent data structure.
+14. [model.js](src/model.js) - learn about building a rules-based, or constructor/type-based engine that validates deeply-nested data structures that follow a certain pattern. Basically, an ORM that validates Plain Old Javascript Objects.
+15. [meta.js](src/meta.js) - learn about programming certain methods that are focused on metaprogramming – functions that manipulate or alter your own code, such as a `mixin()` function that can build mixins for an ES6 `class`.
 
 #### License
 
