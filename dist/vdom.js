@@ -282,6 +282,9 @@ var createTag = function createTag() {
         if (el.unload && el.unload.indexOf(unload) === -1) el.unload.push(unload);else if (!el.unload) el.unload = [unload];
     }
     applyEvents(stripEvents(vdom), el);
+    unload && rAF(function (_) {
+        return unload();
+    });
     config && rAF(function (_) {
         return config(el);
     });
@@ -297,12 +300,11 @@ var removeEl = function removeEl(el) {
     if (!el) return;
     el.parentElement.removeChild(el);
     removeEvents(el);
-    if (el.unload instanceof Array) {
-        var u = el.unload;
-        for (var i in u) {
-            u[i]();
-        }
-    }
+    // removed for now, added unload logic to the immediate draw()s
+    // if(el.unload instanceof Array) {
+    //     let u = el.unload
+    //     for(var i in u) u[i]()
+    // }
 };
 
 var applyUpdates = function applyUpdates(vdom, el) {
