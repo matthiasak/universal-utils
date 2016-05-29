@@ -176,9 +176,11 @@ var mount = exports.mount = function mount(fn, el) {
 };
 
 var render = debounce(function (fn, el) {
-    if (simpleRenderingMode) return simpleApply(fn, el);
-    applyUpdates(fn, el.children[0], el);
-}, 16.6);
+    return rAF(function (_) {
+        if (simpleRenderingMode) return simpleApply(fn, el);
+        applyUpdates(fn, el.children[0], el);
+    });
+});
 
 var update = exports.update = function update() {
     var _iteratorNormalCompletion = true;
@@ -301,10 +303,7 @@ var removeEl = function removeEl(el) {
     el.parentElement.removeChild(el);
     removeEvents(el);
     // removed for now, added unload logic to the immediate draw()s
-    // if(el.unload instanceof Array) {
-    //     let u = el.unload
-    //     for(var i in u) u[i]()
-    // }
+    if (el.unload instanceof Function) el.unload();
 };
 
 var applyUpdates = function applyUpdates(vdom, el) {

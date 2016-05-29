@@ -142,10 +142,10 @@ export const mount = (fn, el) => {
     render(fn, el)
 }
 
-const render = debounce((fn, el) => {
+const render = debounce((fn, el) => rAF(_ => {
     if(simpleRenderingMode) return simpleApply(fn, el)
     applyUpdates(fn, el.children[0], el)
-}, 16.6)
+}))
 
 export const update = () => {
     for(let [el,fn] of mounts.entries())
@@ -225,10 +225,8 @@ const removeEl = el => {
     el.parentElement.removeChild(el)
     removeEvents(el)
     // removed for now, added unload logic to the immediate draw()s
-    // if(el.unload instanceof Array) {
-    //     let u = el.unload
-    //     for(var i in u) u[i]()
-    // }
+    if(el.unload instanceof Function)
+        el.unload()
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
