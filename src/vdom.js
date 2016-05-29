@@ -211,6 +211,7 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
         else if(!el.unload) el.unload = [unload]
     }
     applyEvents(stripEvents(vdom), el)
+    unload && rAF(_ => unload())
     config && rAF(_ => config(el))
     return el
 }
@@ -222,10 +223,11 @@ const removeEl = el => {
     if(!el) return
     el.parentElement.removeChild(el)
     removeEvents(el)
-    if(el.unload instanceof Array) {
-        let u = el.unload
-        for(var i in u) u[i]()
-    }
+    // removed for now, added unload logic to the immediate draw()s
+    // if(el.unload instanceof Array) {
+    //     let u = el.unload
+    //     for(var i in u) u[i]()
+    // }
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
