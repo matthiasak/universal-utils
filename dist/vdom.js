@@ -278,13 +278,13 @@ var createTag = function createTag() {
     }
 
     setAttrs(vdom, el);
+    if (el.unload instanceof Function) {
+        rAF(el.unload);
+    }
     if (unload instanceof Function) {
-        if (el.unload && el.unload.indexOf(unload) === -1) el.unload.push(unload);else if (!el.unload) el.unload = [unload];
+        el.unload = unload;
     }
     applyEvents(stripEvents(vdom), el);
-    unload && rAF(function (_) {
-        return unload();
-    });
     config && rAF(function (_) {
         return config(el);
     });
