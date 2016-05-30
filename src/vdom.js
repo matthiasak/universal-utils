@@ -197,6 +197,7 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
         shouldExchange = !el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase(),
         _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate()
 
+    if(!attrs) return
     if(!_shouldUpdate && el) return
 
     if(shouldExchange){
