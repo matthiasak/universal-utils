@@ -4,13 +4,13 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-var simpleRenderingMode = false;
 
 var class_id_regex = function class_id_regex() {
     return (/[#\.][^#\.]+/ig
@@ -79,38 +79,6 @@ var m = exports.m = function m(selector) {
     return vdom;
 };
 
-var reservedAttrs = ['className', 'id'];
-var html = exports.html = function html(vdom) {
-    if (vdom instanceof Array) return vdom.map(function (c) {
-        return html(c);
-    }).join(' ');
-    if (!((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object') || Object.getPrototypeOf(vdom) !== Object.prototype) return vdom;
-
-    var tag = vdom.tag;
-    var id = vdom.id;
-    var className = vdom.className;
-    var attrs = vdom.attrs;
-    var children = vdom.children;
-    var _id = 'id="' + (id || attrs.id || '') + '"';
-    var _class = 'class="' + ((className || '') + ' ' + (attrs.className || '')).trim() + '"';
-    var closing = children ? children.map(function (c) {
-        return html(c);
-    }).join(' ') + '</' + tag + '>' : '';
-    // TODO: figure out wtf todo here?
-    // maybe just never use these, only use html() on server rendering?
-    var events = stripEvents(vdom);
-    var _attrs = '';
-    for (var i in attrs || Object.create(null)) {
-        if (reservedAttrs.indexOf(x) === -1) {
-            _attrs += ' ' + i + '="' + attrs[i] + '"';
-        }
-    }
-
-    // POOL.recycle(vdom)
-
-    return '<' + tag + ' ' + _id + ' ' + _class + ' ' + _attrs + ' ' + (!children ? '/' : '') + '>' + closing;
-};
-
 var rAF = exports.rAF = global.document && (requestAnimationFrame || webkitRequestAnimationFrame || mozRequestAnimationFrame) || function (cb) {
     return setTimeout(cb, 16.6);
 };
@@ -177,7 +145,6 @@ var mount = exports.mount = function mount(fn, el) {
 
 var render = debounce(function (fn, el) {
     return rAF(function (_) {
-        if (simpleRenderingMode) return simpleApply(fn, el);
         applyUpdates(fn, el.children[0], el);
     });
 });
@@ -230,7 +197,7 @@ var setAttrs = function setAttrs(_ref2, el) {
             if (attr === 'style') {
                 el.style = stylify(attrs[attr]);
             } else {
-                el[attr] = attrs[attr];
+                el.setAttribute(attr, attrs[attr]);
             }
         }
     }
@@ -294,10 +261,6 @@ var createTag = function createTag() {
     return el;
 };
 
-var simpleApply = function simpleApply(fn, el) {
-    return el.innerHTML = html(fn());
-};
-
 // find parent element, and remove the input element
 var removeEl = function removeEl(el) {
     if (!el) return;
@@ -309,11 +272,6 @@ var removeEl = function removeEl(el) {
 
 var applyUpdates = function applyUpdates(vdom, el) {
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
-
-    // if(!parent || vdom === undefined){
-    //     console.log({message:'Rendering tree problem?', vdom, el, parent})
-    //     throw 'errorrrrrrrrrrrrrrr'
-    // }
 
     // if vdom is a function, execute it until it isn't
     while (vdom instanceof Function) {
@@ -339,9 +297,6 @@ var applyUpdates = function applyUpdates(vdom, el) {
             removeEl(_el.childNodes[_el.childNodes.length - 1]);
         }
     }
-
-    // currently clears/zeroes out the data prematurely, need to figure this out
-    // setTimeout(() => POOL.recycle(vdom), 500)
 };
 
 var qs = exports.qs = function qs() {
@@ -353,13 +308,18 @@ var qs = exports.qs = function qs() {
 var resolver = function resolver() {
     var states = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 
-    var promises = [];
+    var promises = [],
+        done = false;
 
     var _await = function _await() {
         var _promises = arguments.length <= 0 || arguments[0] === undefined ? [] : arguments[0];
 
-        promises = promises.concat(_promises);
-        return Promise.all(promises);
+        promises = [].concat(_toConsumableArray(promises), _toConsumableArray(_promises));
+        return finish();
+    };
+
+    var isDone = function isDone() {
+        return done;
     };
 
     var finish = function finish() {
@@ -368,7 +328,8 @@ var resolver = function resolver() {
             if (promises.length > total) {
                 return finish();
             }
-            return values;
+            done = true;
+            return states;
         });
     };
 
@@ -380,11 +341,12 @@ var resolver = function resolver() {
 
         var f = [];
         keys.forEach(function (name) {
-            var x = props[name],
-                fn = x instanceof Function && x();
+            var x = props[name];
 
-            if (fn && fn.then instanceof Function) {
-                f.push(fn.then(function (d) {
+            while (x instanceof Function) {
+                x = x();
+            }if (x && x.then instanceof Function) {
+                f.push(x.then(function (d) {
                     return states[name] = d;
                 }));
             }
@@ -397,19 +359,119 @@ var resolver = function resolver() {
         return states;
     };
 
-    return { finish: finish, resolve: resolve, getState: getState };
+    return { finish: finish, resolve: resolve, getState: getState, promises: promises, isDone: isDone };
+};
+
+var gs = function gs(view, state) {
+    var r = view(state);
+    while (r instanceof Function) {
+        r = view(instance.getState());
+    }return r;
 };
 
 var container = exports.container = function container(view) {
     var queries = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var instance = arguments.length <= 2 || arguments[2] === undefined ? resolver() : arguments[2];
+    var callback = arguments.length <= 2 || arguments[2] === undefined ? update : arguments[2];
+    var instance = arguments.length <= 3 || arguments[3] === undefined ? resolver() : arguments[3];
 
-    instance.resolve(queries).then(function () {
-        return update();
-    });
-    return function () {
-        return view(instance.getState());
+    var wrapper_view = function wrapper_view(state) {
+        return instance.isDone() ? view(state) : m('div');
     };
+
+    return function (extra_queries) {
+        var r = gs(wrapper_view, instance.getState());
+        instance.resolve(_extends({}, queries, extra_queries)).then(callback);
+
+        if (r instanceof Array) {
+            var _ret = function () {
+                var data = void 0;
+                instance.finish().then(function (d) {
+                    return data = d;
+                });
+                return {
+                    v: r.map(function (x, i) {
+                        x.resolve = function (_) {
+                            return instance.finish().then(function (_) {
+                                return data[i];
+                            });
+                        };
+                        return x;
+                    })
+                };
+            }();
+
+            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+        }
+
+        r.resolve = function (_) {
+            return instance.finish().then(function (_) {
+                return gs(wrapper_view, instance.getState());
+            });
+        };
+        return r;
+    };
+};
+
+var reservedAttrs = ['className', 'id'];
+
+var toHTML = function toHTML(vdom) {
+    while (vdom instanceof Function) {
+        vdom = vdom();
+    }if (vdom instanceof Array) return new Promise(function (r) {
+        return r(html.apply(undefined, _toConsumableArray(vdom)));
+    });
+    if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) !== 'object') return new Promise(function (r) {
+        return r(vdom);
+    });
+    return (vdom.resolve ? vdom.resolve() : Promise.resolve()).then(function (_) {
+        if (_) vdom = _;
+
+        var _vdom = vdom;
+        var tag = _vdom.tag;
+        var id = _vdom.id;
+        var className = _vdom.className;
+        var attrs = _vdom.attrs;
+        var children = _vdom.children;
+        var instance = _vdom.instance;
+        var _id = id || attrs && attrs.id ? ' id="' + (id || attrs && attrs.id || '') + '"' : '';
+        var _class = className || attrs && attrs.className ? ' class="' + ((className || '') + ' ' + (attrs.className || '')).trim() + '"' : '';
+
+        var events = stripEvents(vdom);
+        var _attrs = '';
+        for (var i in attrs || Object.create(null)) {
+            if (i === 'style') {
+                _attrs += ' style="' + stylify(attrs[i]) + '"';
+            } else if (reservedAttrs.indexOf(i) === -1) {
+                _attrs += ' ' + i + '="' + attrs[i] + '"';
+            }
+        }
+
+        if (children) return html.apply(undefined, _toConsumableArray(children)).then(function (str) {
+            return '<' + tag + _id + _class + _attrs + '>' + str + '</' + tag + '>';
+        });
+
+        if ('br,input,img'.split(',').filter(function (x) {
+            return x === tag;
+        }).length === 0) return new Promise(function (r) {
+            return r('<' + tag + _id + _class + _attrs + '></' + tag + '>');
+        });
+
+        return new Promise(function (r) {
+            return r('<' + tag + _id + _class + _attrs + ' />');
+        });
+    });
+};
+
+var html = exports.html = function html() {
+    for (var _len3 = arguments.length, v = Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
+        v[_key3] = arguments[_key3];
+    }
+
+    return Promise.all(v.map(toHTML)).then(function (x) {
+        return x.filter(function (x) {
+            return !!x;
+        }).join('');
+    });
 };
 
 /*
@@ -423,10 +485,6 @@ client-side
 -----
 mount(component, qs())
 
-server-side (Express)
------
-res.send(html(component()))
-
 client-side constant re-rendering
 -----
 const run = () => {
@@ -435,3 +493,18 @@ const run = () => {
 }
 run()
 */
+
+/* ----------------------------- CONTAINER / HTML USAGE (Server-side rendering)
+
+const name = _ => new Promise(res => setTimeout(_ => res('matt'), 1500))
+
+let x = container(data => [
+        m('div.test.row', {className:'hola', 'data-name':data.name, style:{border:'1px solid black'}}),
+        m('div', data.name),
+    ],
+    {name},
+     _=>log('resolved x!')
+)
+
+html(x).then(x => log(x)).catch(e => log(e+''))
+--------------------------- */

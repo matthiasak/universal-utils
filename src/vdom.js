@@ -1,5 +1,3 @@
-const simpleRenderingMode = false
-
 const class_id_regex = () => {
         return /[#\.][^#\.]+/ig
     },
@@ -57,30 +55,6 @@ export const m = (selector, attrs=Object.create(null), ...children) => {
     delete attrs.shouldUpdate
     delete attrs.config
     return vdom
-}
-
-const reservedAttrs = ['className','id']
-export const html = vdom => {
-    if(vdom instanceof Array) return vdom.map(c => html(c)).join(' ')
-    if(!(typeof vdom === 'object') || (Object.getPrototypeOf(vdom) !== Object.prototype)) return vdom
-
-    const {tag, id, className, attrs, children} = vdom,
-        _id = `id="${(id || attrs.id || '')}"`,
-        _class = `class="${((className||'') + ' ' + (attrs.className||'')).trim()}"`
-    const closing = children ? `${children.map(c => html(c)).join(' ')}</${tag}>` : ''
-    // TODO: figure out wtf todo here?
-    // maybe just never use these, only use html() on server rendering?
-    const events = stripEvents(vdom)
-    let _attrs = ''
-    for(var i in (attrs || Object.create(null))){
-        if(reservedAttrs.indexOf(x) === -1){
-            _attrs += ` ${i}="${attrs[i]}"`
-        }
-    }
-
-    // POOL.recycle(vdom)
-
-    return `<${tag} ${_id} ${_class} ${_attrs} ${!children ? '/' : ''}>${closing}`
 }
 
 export const rAF =
@@ -143,7 +117,6 @@ export const mount = (fn, el) => {
 }
 
 const render = debounce((fn, el) => rAF(_ => {
-    if(simpleRenderingMode) return simpleApply(fn, el)
     applyUpdates(fn, el.children[0], el)
 }))
 
@@ -166,7 +139,7 @@ const setAttrs = ({attrs, id, className},el) => {
             if(attr === 'style') {
                 el.style = stylify(attrs[attr])
             } else {
-                el[attr] = attrs[attr]
+                el.setAttribute(attr, attrs[attr])
             }
         }
     }
@@ -218,8 +191,6 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
     return el
 }
 
-const simpleApply = (fn, el) => el.innerHTML = html(fn())
-
 // find parent element, and remove the input element
 const removeEl = el => {
     if(!el) return
@@ -231,11 +202,6 @@ const removeEl = el => {
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
-    // if(!parent || vdom === undefined){
-    //     console.log({message:'Rendering tree problem?', vdom, el, parent})
-    //     throw 'errorrrrrrrrrrrrrrr'
-    // }
-
     // if vdom is a function, execute it until it isn't
     while(vdom instanceof Function)
         vdom = vdom()
@@ -261,20 +227,21 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
             removeEl(_el.childNodes[_el.childNodes.length-1])
         }
     }
-
-    // currently clears/zeroes out the data prematurely, need to figure this out
-    // setTimeout(() => POOL.recycle(vdom), 500)
 }
 
 export const qs = (s='body', el=document) => el.querySelector(s)
 
+
 const resolver  = (states = {}) => {
-    let promises = []
+    let promises = [],
+        done = false
 
     const _await = (_promises = []) => {
-        promises = promises.concat(_promises)
-        return Promise.all(promises)
+        promises = [...promises, ..._promises]
+        return finish()
     }
+
+    const isDone = () => done
 
     const finish = () => {
         const total = promises.length
@@ -282,7 +249,8 @@ const resolver  = (states = {}) => {
             if(promises.length > total){
                 return finish()
             }
-            return values
+            done = true
+            return states
         })
     }
 
@@ -293,12 +261,14 @@ const resolver  = (states = {}) => {
         }
 
         let f = []
-        keys.forEach((name) => {
-            let x = props[name],
-                fn = x instanceof Function && x()
+        keys.forEach(name => {
+            let x = props[name]
 
-            if(fn && fn.then instanceof Function){
-                f.push(fn.then(d => states[name] = d))
+            while(x instanceof Function)
+                x = x()
+
+            if(x && x.then instanceof Function){
+                f.push(x.then(d => states[name] = d))
             }
         })
 
@@ -307,13 +277,76 @@ const resolver  = (states = {}) => {
 
     const getState = () => states
 
-    return { finish, resolve, getState }
+    return { finish, resolve, getState, promises, isDone }
 }
 
-export const container = (view, queries = {}, instance=resolver()) => {
-    instance.resolve(queries).then(() => update())
-    return () => view(instance.getState())
+const gs = (view, state) => {
+    let r = view(state)
+    while(r instanceof Function)
+        r = view(instance.getState())
+    return r
 }
+
+export const container = (view, queries={}, callback=update, instance=resolver()) => {
+    let wrapper_view = state =>
+        instance.isDone() ? view(state) : m('div')
+
+    return (extra_queries) => {
+        let r = gs(wrapper_view, instance.getState())
+        instance.resolve({...queries, ...extra_queries}).then(callback)
+
+        if(r instanceof Array) {
+            let data
+            instance.finish().then(d => data = d)
+            return r.map((x,i) => {
+                x.resolve = _ => instance.finish().then(_ => data[i])
+                return x
+            })
+        }
+
+        r.resolve = _ => instance.finish().then(_ => gs(wrapper_view, instance.getState()))
+        return r
+    }
+}
+
+const reservedAttrs = ['className','id']
+
+const toHTML = vdom => {
+    while(vdom instanceof Function) vdom = vdom()
+    if(vdom instanceof Array) return new Promise(r => r(html(...vdom)))
+    if(typeof vdom !== 'object') return new Promise(r => r(vdom))
+    return (vdom.resolve ? vdom.resolve() : Promise.resolve()).then(_ => {
+        if(_) vdom = _
+
+        const {tag, id, className, attrs, children, instance} = vdom,
+            _id = (id || (attrs && attrs.id)) ? ` id="${(id || (attrs && attrs.id) || '')}"` : '',
+            _class = (className || (attrs && attrs.className)) ? ` class="${((className||'') + ' ' + (attrs.className||'')).trim()}"` : ''
+
+        const events = stripEvents(vdom)
+        let _attrs = ''
+        for(var i in (attrs || Object.create(null))){
+            if(i === 'style'){
+                _attrs += ` style="${stylify(attrs[i])}"`
+            } else if(reservedAttrs.indexOf(i) === -1){
+                _attrs += ` ${i}="${attrs[i]}"`
+            }
+        }
+
+        if(children)
+            return html(...children).then(str =>
+                `<${tag}${_id}${_class}${_attrs}>${str}</${tag}>`)
+
+        if('br,input,img'.split(',').filter(x => x===tag).length === 0)
+            return new Promise(r => r(`<${tag}${_id}${_class}${_attrs}></${tag}>`))
+
+        return new Promise(r => r(`<${tag}${_id}${_class}${_attrs} />`))
+    })
+}
+
+export const html = (...v) =>
+    Promise.all(v.map(toHTML)).then(x => x.filter(x => !!x).join(''))
+
+
 
 /*
 usage:
@@ -326,10 +359,6 @@ client-side
 -----
 mount(component, qs())
 
-server-side (Express)
------
-res.send(html(component()))
-
 client-side constant re-rendering
 -----
 const run = () => {
@@ -338,3 +367,18 @@ const run = () => {
 }
 run()
 */
+
+/* ----------------------------- CONTAINER / HTML USAGE (Server-side rendering)
+
+const name = _ => new Promise(res => setTimeout(_ => res('matt'), 1500))
+
+let x = container(data => [
+        m('div.test.row', {className:'hola', 'data-name':data.name, style:{border:'1px solid black'}}),
+        m('div', data.name),
+    ],
+    {name},
+     _=>log('resolved x!')
+)
+
+html(x).then(x => log(x)).catch(e => log(e+''))
+--------------------------- */

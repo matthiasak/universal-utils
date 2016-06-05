@@ -16,9 +16,12 @@
       "stage-0"
     ]
   },
-  "dependencies": {
-    "isomorphic-fetch": "2.x",
+  "peerDependencies": {
+    "universal-utils-vdom-components": "0.x",
     "redis": "2.x"
+  },
+  "dependencies": {
+    "isomorphic-fetch": "latest"
   },
   "devDependencies": {
     "babel-cli": "6.x",
