@@ -154,7 +154,7 @@ const setAttrs = ({attrs, id, className},el) => {
 const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) => {
 
     // make text nodes from primitive types
-    if(!(typeof vdom === 'object')){
+    if(typeof vdom !== 'object'){
         let t = document.createTextNode(vdom)
         if(el){
             parent.insertBefore(t,el)
@@ -167,7 +167,7 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
 
     // else make an HTMLElement from "tag" types
     let {tag, attrs, id, className, unload, shouldUpdate, config} = vdom,
-        shouldExchange = !el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase(),
+        shouldExchange = !el || !el.tagName || (tag && el.tagName.toLowerCase() !== tag.toLowerCase()),
         _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate()
 
     if(!attrs) return
@@ -291,9 +291,9 @@ export const container = (view, queries={}, callback=update, instance=resolver()
     let wrapper_view = state =>
         instance.isDone() ? view(state) : m('div')
 
+    instance.resolve({...queries, ...extra_queries}).then(callback)
     return (extra_queries) => {
         let r = gs(wrapper_view, instance.getState())
-        instance.resolve({...queries, ...extra_queries}).then(callback)
 
         if(r instanceof Array) {
             let data

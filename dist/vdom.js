@@ -216,7 +216,7 @@ var createTag = function createTag() {
 
 
     // make text nodes from primitive types
-    if (!((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) === 'object')) {
+    if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) !== 'object') {
         var t = document.createTextNode(vdom);
         if (el) {
             parent.insertBefore(t, el);
@@ -235,7 +235,7 @@ var createTag = function createTag() {
     var unload = vdom.unload;
     var shouldUpdate = vdom.shouldUpdate;
     var config = vdom.config;
-    var shouldExchange = !el || !el.tagName || el.tagName.toLowerCase() !== tag.toLowerCase();
+    var shouldExchange = !el || !el.tagName || tag && el.tagName.toLowerCase() !== tag.toLowerCase();
     var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate();
 
     if (!attrs) return;
@@ -378,9 +378,9 @@ var container = exports.container = function container(view) {
         return instance.isDone() ? view(state) : m('div');
     };
 
+    instance.resolve(_extends({}, queries, extra_queries)).then(callback);
     return function (extra_queries) {
         var r = gs(wrapper_view, instance.getState());
-        instance.resolve(_extends({}, queries, extra_queries)).then(callback);
 
         if (r instanceof Array) {
             var _ret = function () {
