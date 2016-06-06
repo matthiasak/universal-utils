@@ -378,9 +378,10 @@ var container = exports.container = function container(view) {
         return instance.isDone() ? view(state) : m('div');
     };
 
-    instance.resolve(_extends({}, queries, extra_queries)).then(callback);
+    instance.resolve(_extends({}, queries)).then(callback);
     return function (extra_queries) {
         var r = gs(wrapper_view, instance.getState());
+        extra_queries && instance.resolve(extra_queries).then(callback);
 
         if (r instanceof Array) {
             var _ret = function () {

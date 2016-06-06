@@ -291,9 +291,10 @@ export const container = (view, queries={}, callback=update, instance=resolver()
     let wrapper_view = state =>
         instance.isDone() ? view(state) : m('div')
 
-    instance.resolve({...queries, ...extra_queries}).then(callback)
+    instance.resolve({...queries}).then(callback)
     return (extra_queries) => {
         let r = gs(wrapper_view, instance.getState())
+        extra_queries && instance.resolve(extra_queries).then(callback)
 
         if(r instanceof Array) {
             let data
