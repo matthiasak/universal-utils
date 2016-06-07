@@ -136,10 +136,10 @@ var removeEvents = function removeEvents(el) {
     }
 };
 
-var mounts = new Map();
+var mnt = void 0;
 
 var mount = exports.mount = function mount(fn, el) {
-    mounts.set(el, fn);
+    mnt = [el, fn];
     render(fn, el);
 };
 
@@ -150,33 +150,15 @@ var render = debounce(function (fn, el) {
 });
 
 var update = exports.update = function update() {
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    if (!mnt) return;
+    var _mnt = mnt;
 
-    try {
-        for (var _iterator = mounts.entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var _step$value = _slicedToArray(_step.value, 2);
+    var _mnt2 = _slicedToArray(_mnt, 2);
 
-            var el = _step$value[0];
-            var fn = _step$value[1];
+    var el = _mnt2[0];
+    var fn = _mnt2[1];
 
-            render(fn, el);
-        }
-    } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-    } finally {
-        try {
-            if (!_iteratorNormalCompletion && _iterator.return) {
-                _iterator.return();
-            }
-        } finally {
-            if (_didIteratorError) {
-                throw _iteratorError;
-            }
-        }
-    }
+    render(fn, el);
 };
 
 var stylify = function stylify(style) {
@@ -236,7 +218,7 @@ var createTag = function createTag() {
     var shouldUpdate = vdom.shouldUpdate;
     var config = vdom.config;
     var shouldExchange = !el || !el.tagName || tag && el.tagName.toLowerCase() !== tag.toLowerCase();
-    var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate();
+    var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el);
 
     if (!attrs) return;
     if (!_shouldUpdate && el) return;
@@ -273,10 +255,19 @@ var removeEl = function removeEl(el) {
 var applyUpdates = function applyUpdates(vdom, el) {
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
+    var v = vdom;
     // if vdom is a function, execute it until it isn't
     while (vdom instanceof Function) {
         vdom = vdom();
-    } // create/edit el under parent
+    }if (!vdom) return;
+
+    if (vdom.resolve instanceof Function) {
+        return vdom.resolve().then(function (v) {
+            applyUpdates(v, el, parent);
+        });
+    }
+
+    // create/edit el under parent
     var _el = vdom instanceof Array ? parent : createTag(vdom, el, parent);
 
     if (!_el) return;
@@ -318,13 +309,22 @@ var resolver = function resolver() {
         return finish();
     };
 
+    var wait = function wait() {
+        var ms = arguments.length <= 0 || arguments[0] === undefined ? 0 : arguments[0];
+        return new Promise(function (res) {
+            return setTimeout(res, ms);
+        });
+    };
+
     var isDone = function isDone() {
         return done;
     };
 
     var finish = function finish() {
         var total = promises.length;
-        return Promise.all(promises).then(function (values) {
+        return wait().then(function (_) {
+            return Promise.all(promises);
+        }).then(function (values) {
             if (promises.length > total) {
                 return finish();
             }
@@ -335,9 +335,7 @@ var resolver = function resolver() {
 
     var resolve = function resolve(props) {
         var keys = Object.keys(props);
-        if (!keys.length) {
-            return Promise.resolve(true);
-        }
+        if (!keys.length) return Promise.resolve(true);
 
         var f = [];
         keys.forEach(function (name) {
@@ -345,11 +343,9 @@ var resolver = function resolver() {
 
             while (x instanceof Function) {
                 x = x();
-            }if (x && x.then instanceof Function) {
-                f.push(x.then(function (d) {
-                    return states[name] = d;
-                }));
-            }
+            }if (x && x.then instanceof Function) f.push(x.then(function (d) {
+                return states[name] = d;
+            }));
         });
 
         return _await(f);
@@ -371,29 +367,27 @@ var gs = function gs(view, state) {
 
 var container = exports.container = function container(view) {
     var queries = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-    var callback = arguments.length <= 2 || arguments[2] === undefined ? update : arguments[2];
-    var instance = arguments.length <= 3 || arguments[3] === undefined ? resolver() : arguments[3];
+    var instance = arguments.length <= 2 || arguments[2] === undefined ? resolver() : arguments[2];
 
     var wrapper_view = function wrapper_view(state) {
         return instance.isDone() ? view(state) : m('div');
     };
 
-    instance.resolve(_extends({}, queries)).then(callback);
     return function (extra_queries) {
         var r = gs(wrapper_view, instance.getState());
-        extra_queries && instance.resolve(extra_queries).then(callback);
+        instance.resolve(_extends({}, queries, extra_queries));
 
         if (r instanceof Array) {
             var _ret = function () {
-                var data = void 0;
-                instance.finish().then(function (d) {
-                    return data = d;
+                var d = instance.finish().then(function (_) {
+                    return gs(wrapper_view, instance.getState());
                 });
+
                 return {
                     v: r.map(function (x, i) {
                         x.resolve = function (_) {
-                            return instance.finish().then(function (_) {
-                                return data[i];
+                            return d.then(function (vdom) {
+                                return vdom[i];
                             });
                         };
                         return x;
@@ -409,31 +403,39 @@ var container = exports.container = function container(view) {
                 return gs(wrapper_view, instance.getState());
             });
         };
+
         return r;
     };
 };
 
 var reservedAttrs = ['className', 'id'];
 
-var toHTML = function toHTML(vdom) {
-    while (vdom instanceof Function) {
-        vdom = vdom();
-    }if (vdom instanceof Array) return new Promise(function (r) {
-        return r(html.apply(undefined, _toConsumableArray(vdom)));
+var toHTML = function toHTML(_vdom) {
+    while (_vdom instanceof Function) {
+        _vdom = _vdom();
+    }if (_vdom instanceof Array) return new Promise(function (r) {
+        return r(html.apply(undefined, _toConsumableArray(_vdom)));
     });
-    if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) !== 'object') return new Promise(function (r) {
-        return r(vdom);
+    if (!_vdom) return new Promise(function (r) {
+        return r('');
     });
-    return (vdom.resolve ? vdom.resolve() : Promise.resolve()).then(function (_) {
-        if (_) vdom = _;
+    if ((typeof _vdom === 'undefined' ? 'undefined' : _typeof(_vdom)) !== 'object') return new Promise(function (r) {
+        return r(_vdom);
+    });
+    return (_vdom.resolve ? _vdom.resolve() : Promise.resolve()).then(function (vdom) {
+        if (!vdom) vdom = _vdom;
 
-        var _vdom = vdom;
-        var tag = _vdom.tag;
-        var id = _vdom.id;
-        var className = _vdom.className;
-        var attrs = _vdom.attrs;
-        var children = _vdom.children;
-        var instance = _vdom.instance;
+        if (vdom instanceof Array) return new Promise(function (r) {
+            return r(html.apply(undefined, _toConsumableArray(vdom)));
+        });
+
+        var _vdom2 = vdom;
+        var tag = _vdom2.tag;
+        var id = _vdom2.id;
+        var className = _vdom2.className;
+        var attrs = _vdom2.attrs;
+        var children = _vdom2.children;
+        var instance = _vdom2.instance;
         var _id = id || attrs && attrs.id ? ' id="' + (id || attrs && attrs.id || '') + '"' : '';
         var _class = className || attrs && attrs.className ? ' class="' + ((className || '') + ' ' + (attrs.className || '')).trim() + '"' : '';
 
@@ -503,8 +505,7 @@ let x = container(data => [
         m('div.test.row', {className:'hola', 'data-name':data.name, style:{border:'1px solid black'}}),
         m('div', data.name),
     ],
-    {name},
-     _=>log('resolved x!')
+    {name}
 )
 
 html(x).then(x => log(x)).catch(e => log(e+''))

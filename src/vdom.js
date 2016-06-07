@@ -109,10 +109,10 @@ const removeEvents = el => {
     }
 }
 
-const mounts = new Map()
+let mnt
 
 export const mount = (fn, el) => {
-    mounts.set(el, fn)
+    mnt = [el, fn]
     render(fn, el)
 }
 
@@ -121,8 +121,9 @@ const render = debounce((fn, el) => rAF(_ => {
 }))
 
 export const update = () => {
-    for(let [el,fn] of mounts.entries())
-        render(fn, el)
+    if(!mnt) return
+    let [el, fn] = mnt
+    render(fn, el)
 }
 
 const stylify = style => {
@@ -168,7 +169,7 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
     // else make an HTMLElement from "tag" types
     let {tag, attrs, id, className, unload, shouldUpdate, config} = vdom,
         shouldExchange = !el || !el.tagName || (tag && el.tagName.toLowerCase() !== tag.toLowerCase()),
-        _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate()
+        _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el)
 
     if(!attrs) return
     if(!_shouldUpdate && el) return
@@ -202,9 +203,18 @@ const removeEl = el => {
 }
 
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
+    let v = vdom
     // if vdom is a function, execute it until it isn't
     while(vdom instanceof Function)
         vdom = vdom()
+
+    if(!vdom) return
+
+    if(vdom.resolve instanceof Function){
+        return vdom.resolve().then(v => {
+            applyUpdates(v, el, parent)
+        })
+    }
 
     // create/edit el under parent
     let _el = vdom instanceof Array ? parent : createTag(vdom, el, parent)
@@ -241,11 +251,13 @@ const resolver  = (states = {}) => {
         return finish()
     }
 
+    const wait = (ms=0) => new Promise(res => setTimeout(res, ms))
+
     const isDone = () => done
 
     const finish = () => {
         const total = promises.length
-        return Promise.all(promises).then(values => {
+        return wait().then(_ => Promise.all(promises)).then(values => {
             if(promises.length > total){
                 return finish()
             }
@@ -256,9 +268,8 @@ const resolver  = (states = {}) => {
 
     const resolve = (props) => {
         const keys = Object.keys(props)
-        if (!keys.length) {
+        if (!keys.length)
             return Promise.resolve(true)
-        }
 
         let f = []
         keys.forEach(name => {
@@ -267,9 +278,8 @@ const resolver  = (states = {}) => {
             while(x instanceof Function)
                 x = x()
 
-            if(x && x.then instanceof Function){
+            if(x && x.then instanceof Function)
                 f.push(x.then(d => states[name] = d))
-            }
         })
 
         return _await(f)
@@ -287,37 +297,42 @@ const gs = (view, state) => {
     return r
 }
 
-export const container = (view, queries={}, callback=update, instance=resolver()) => {
+export const container = (view, queries={}, instance=resolver()) => {
     let wrapper_view = state =>
         instance.isDone() ? view(state) : m('div')
 
-    instance.resolve({...queries}).then(callback)
     return (extra_queries) => {
         let r = gs(wrapper_view, instance.getState())
-        extra_queries && instance.resolve(extra_queries).then(callback)
+        instance.resolve({...queries, ...extra_queries})
 
         if(r instanceof Array) {
-            let data
-            instance.finish().then(d => data = d)
+            let d = instance.finish().then(_ =>
+                gs(wrapper_view, instance.getState()))
+
             return r.map((x,i) => {
-                x.resolve = _ => instance.finish().then(_ => data[i])
+                x.resolve = _ => d.then(vdom => vdom[i])
                 return x
             })
         }
 
-        r.resolve = _ => instance.finish().then(_ => gs(wrapper_view, instance.getState()))
+        r.resolve = _ => instance.finish().then(_ =>
+            gs(wrapper_view, instance.getState()))
+
         return r
     }
 }
 
 const reservedAttrs = ['className','id']
 
-const toHTML = vdom => {
-    while(vdom instanceof Function) vdom = vdom()
-    if(vdom instanceof Array) return new Promise(r => r(html(...vdom)))
-    if(typeof vdom !== 'object') return new Promise(r => r(vdom))
-    return (vdom.resolve ? vdom.resolve() : Promise.resolve()).then(_ => {
-        if(_) vdom = _
+const toHTML = _vdom => {
+    while(_vdom instanceof Function) _vdom = _vdom()
+    if(_vdom instanceof Array) return new Promise(r => r(html(..._vdom)))
+    if(!_vdom) return new Promise(r => r(''))
+    if(typeof _vdom !== 'object') return new Promise(r => r(_vdom))
+    return (_vdom.resolve ? _vdom.resolve() : Promise.resolve()).then(vdom => {
+        if(!vdom) vdom = _vdom
+
+        if(vdom instanceof Array) return new Promise(r => r(html(...vdom)))
 
         const {tag, id, className, attrs, children, instance} = vdom,
             _id = (id || (attrs && attrs.id)) ? ` id="${(id || (attrs && attrs.id) || '')}"` : '',
@@ -377,8 +392,7 @@ let x = container(data => [
         m('div.test.row', {className:'hola', 'data-name':data.name, style:{border:'1px solid black'}}),
         m('div', data.name),
     ],
-    {name},
-     _=>log('resolved x!')
+    {name}
 )
 
 html(x).then(x => log(x)).catch(e => log(e+''))

@@ -61,6 +61,20 @@ export const whatWGFetch = (...args) =>
     global.fetch(...args)
         .then(r => r.json())
 
+export const cacheable = (fetch=whatWGFetch, duration=1000*60*5) => {
+    let cache = {}
+    return (url,opts) => {
+        let c = cache[url]
+        if(c && (c.timestamp + duration >= +new Date))
+            return Promise.resolve(c.result)
+
+        return fetch(url,opts).then(result => {
+            cache[url] = {result, timestamp: +new Date}
+            return result
+        })
+    }
+}
+
 export const fetch = cancellable(batch(whatWGFetch))
 
 // !! usage

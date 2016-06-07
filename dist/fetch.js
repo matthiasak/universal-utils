@@ -79,6 +79,22 @@ var whatWGFetch = exports.whatWGFetch = function whatWGFetch() {
     });
 };
 
+var cacheable = exports.cacheable = function cacheable() {
+    var fetch = arguments.length <= 0 || arguments[0] === undefined ? whatWGFetch : arguments[0];
+    var duration = arguments.length <= 1 || arguments[1] === undefined ? 1000 * 60 * 5 : arguments[1];
+
+    var cache = {};
+    return function (url, opts) {
+        var c = cache[url];
+        if (c && c.timestamp + duration >= +new Date()) return Promise.resolve(c.result);
+
+        return fetch(url, opts).then(function (result) {
+            cache[url] = { result: result, timestamp: +new Date() };
+            return result;
+        });
+    };
+};
+
 var fetch = exports.fetch = cancellable(batch(whatWGFetch));
 
 // !! usage
