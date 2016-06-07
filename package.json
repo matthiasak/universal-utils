@@ -8,7 +8,7 @@
     "deploy": "npm run build; git add --all .; git commit -am 'new build'; npm version patch; git push origin HEAD; npm publish;",
     "watch": "babel src --out-dir dist -w; cp ./src/cache/package.json ./dist/cache/package.json;",
     "docs": "esdoc -c esdoc.json",
-    "docs:surge": "npm-run-all docs; surge dist/esdoc;"
+    "docs:surge": "npm run docs; surge dist/esdoc;"
   },
   "author": "Matt Keas (@matthiasak)",
   "license": "MIT",
@@ -33,6 +33,7 @@
     "babel-preset-react": "6.x",
     "babel-preset-stage-0": "6.x",
     "esdoc": "0.x",
-    "esdoc-es7-plugin": "0.x"
+    "esdoc-es7-plugin": "0.x",
+    "surge": "0.x"
   }
 }
