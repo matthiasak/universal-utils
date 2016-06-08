@@ -440,23 +440,26 @@ var toHTML = function toHTML(_vdom) {
         var _class = className || attrs && attrs.className ? ' class="' + ((className || '') + ' ' + (attrs.className || '')).trim() + '"' : '';
 
         var events = stripEvents(vdom);
-        var _attrs = '';
+        var _attrs = '',
+            inner = '';
         for (var i in attrs || Object.create(null)) {
             if (i === 'style') {
                 _attrs += ' style="' + stylify(attrs[i]) + '"';
+            } else if (i === 'innerHTML') {
+                inner = attrs[i];
             } else if (reservedAttrs.indexOf(i) === -1) {
                 _attrs += ' ' + i + '="' + attrs[i] + '"';
             }
         }
 
-        if (children) return html.apply(undefined, _toConsumableArray(children)).then(function (str) {
+        if (!inner && children) return html.apply(undefined, _toConsumableArray(children)).then(function (str) {
             return '<' + tag + _id + _class + _attrs + '>' + str + '</' + tag + '>';
         });
 
         if ('br,input,img'.split(',').filter(function (x) {
             return x === tag;
         }).length === 0) return new Promise(function (r) {
-            return r('<' + tag + _id + _class + _attrs + '></' + tag + '>');
+            return r('<' + tag + _id + _class + _attrs + '>' + inner + '</' + tag + '>');
         });
 
         return new Promise(function (r) {

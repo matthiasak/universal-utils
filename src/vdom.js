@@ -339,21 +339,24 @@ const toHTML = _vdom => {
             _class = (className || (attrs && attrs.className)) ? ` class="${((className||'') + ' ' + (attrs.className||'')).trim()}"` : ''
 
         const events = stripEvents(vdom)
-        let _attrs = ''
+        let _attrs = '',
+            inner = ''
         for(var i in (attrs || Object.create(null))){
             if(i === 'style'){
                 _attrs += ` style="${stylify(attrs[i])}"`
+            } else if(i === 'innerHTML') {
+                inner = attrs[i]
             } else if(reservedAttrs.indexOf(i) === -1){
                 _attrs += ` ${i}="${attrs[i]}"`
             }
         }
 
-        if(children)
+        if(!inner && children)
             return html(...children).then(str =>
                 `<${tag}${_id}${_class}${_attrs}>${str}</${tag}>`)
 
         if('br,input,img'.split(',').filter(x => x===tag).length === 0)
-            return new Promise(r => r(`<${tag}${_id}${_class}${_attrs}></${tag}>`))
+            return new Promise(r => r(`<${tag}${_id}${_class}${_attrs}>${inner}</${tag}>`))
 
         return new Promise(r => r(`<${tag}${_id}${_class}${_attrs} />`))
     })
