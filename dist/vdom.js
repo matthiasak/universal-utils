@@ -178,6 +178,10 @@ var setAttrs = function setAttrs(_ref2, el) {
         for (var attr in attrs) {
             if (attr === 'style') {
                 el.style = stylify(attrs[attr]);
+            } else if (attr === 'innerHTML') {
+                rAF(function () {
+                    return el.innerHTML = attrs[attr];
+                });
             } else {
                 el.setAttribute(attr, attrs[attr]);
             }

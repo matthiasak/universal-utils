@@ -139,6 +139,8 @@ const setAttrs = ({attrs, id, className},el) => {
         for(var attr in attrs){
             if(attr === 'style') {
                 el.style = stylify(attrs[attr])
+            } else if(attr === 'innerHTML'){
+                rAF(() => el.innerHTML = attrs[attr])
             } else {
                 el.setAttribute(attr, attrs[attr])
             }
