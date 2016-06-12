@@ -182,6 +182,10 @@ var setAttrs = function setAttrs(_ref2, el) {
                 rAF(function () {
                     return el.innerHTML = attrs[attr];
                 });
+            } else if (attr === 'value') {
+                rAF(function () {
+                    return el.value = attrs[attr];
+                });
             } else {
                 el.setAttribute(attr, attrs[attr]);
             }
