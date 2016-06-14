@@ -10,6 +10,10 @@
     "docs": "esdoc -c esdoc.json",
     "docs:surge": "npm run docs; surge dist/esdoc;"
   },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/matthiasak/universal-utils.git"
+  },
   "author": "Matt Keas (@matthiasak)",
   "license": "MIT",
   "babel": {
