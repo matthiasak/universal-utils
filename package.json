@@ -22,7 +22,7 @@
       "stage-0"
     ]
   },
-  "peerDependencies": {
+  "optionalDependencies": {
     "universal-utils-vdom-components": "0.x",
     "redis": "2.x"
   },
