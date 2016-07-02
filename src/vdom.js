@@ -206,6 +206,15 @@ const removeEl = el => {
         el.unload()
 }
 
+const insertAt = (el, parent, i) => {
+    if(parent.children.length > i) {
+        let next_sib = parent.children[i]
+        parent.insertBefore(el, next_sib)
+    } else {
+        parent.appendChild(el)
+    }
+}
+
 const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
     let v = vdom
     // if vdom is a function, execute it until it isn't
@@ -215,8 +224,17 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
     if(!vdom) return
 
     if(vdom.resolve instanceof Function){
+        let i = parent.children.length
+        // console.log(1, {v, el, parent})
         return vdom.resolve().then(v => {
-            applyUpdates(v, el, parent)
+            // console.log(2, {v, el, parent})
+            if(!el) {
+                let x = createTag(v, null, parent)
+                insertAt(x, parent, i)
+                applyUpdates(v, x, parent)
+            } else {
+                applyUpdates(v, el, parent)
+            }
         })
     }
 
@@ -303,11 +321,11 @@ const gs = (view, state) => {
 
 export const container = (view, queries={}, instance=resolver()) => {
     let wrapper_view = state =>
-        instance.isDone() ? view(state) : m('div')
+        instance.isDone() ? view(state) : m('span')
 
-    return (extra_queries) => {
+    return () => {
         let r = gs(wrapper_view, instance.getState())
-        instance.resolve({...queries, ...extra_queries})
+        instance.resolve(queries)
 
         if(r instanceof Array) {
             let d = instance.finish().then(_ =>

@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
@@ -260,6 +258,15 @@ var removeEl = function removeEl(el) {
     if (el.unload instanceof Function) el.unload();
 };
 
+var insertAt = function insertAt(el, parent, i) {
+    if (parent.children.length > i) {
+        var next_sib = parent.children[i];
+        parent.insertBefore(el, next_sib);
+    } else {
+        parent.appendChild(el);
+    }
+};
+
 var applyUpdates = function applyUpdates(vdom, el) {
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
@@ -270,9 +277,24 @@ var applyUpdates = function applyUpdates(vdom, el) {
     }if (!vdom) return;
 
     if (vdom.resolve instanceof Function) {
-        return vdom.resolve().then(function (v) {
-            applyUpdates(v, el, parent);
-        });
+        var _ret = function () {
+            var i = parent.children.length;
+            // console.log(1, {v, el, parent})
+            return {
+                v: vdom.resolve().then(function (v) {
+                    // console.log(2, {v, el, parent})
+                    if (!el) {
+                        var x = createTag(v, null, parent);
+                        insertAt(x, parent, i);
+                        applyUpdates(v, x, parent);
+                    } else {
+                        applyUpdates(v, el, parent);
+                    }
+                })
+            };
+        }();
+
+        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
     }
 
     // create/edit el under parent
@@ -288,8 +310,8 @@ var applyUpdates = function applyUpdates(vdom, el) {
             removeEl(el_children[el_children.length - 1]);
         }
 
-        for (var i = 0; i < vdom_children.length; i++) {
-            applyUpdates(vdom_children[i], el_children[i], _el);
+        for (var _i = 0; _i < vdom_children.length; _i++) {
+            applyUpdates(vdom_children[_i], el_children[_i], _el);
         }
     } else {
         while (_el.childNodes.length > 0) {
@@ -378,15 +400,15 @@ var container = exports.container = function container(view) {
     var instance = arguments.length <= 2 || arguments[2] === undefined ? resolver() : arguments[2];
 
     var wrapper_view = function wrapper_view(state) {
-        return instance.isDone() ? view(state) : m('div');
+        return instance.isDone() ? view(state) : m('span');
     };
 
-    return function (extra_queries) {
+    return function () {
         var r = gs(wrapper_view, instance.getState());
-        instance.resolve(_extends({}, queries, extra_queries));
+        instance.resolve(queries);
 
         if (r instanceof Array) {
-            var _ret = function () {
+            var _ret2 = function () {
                 var d = instance.finish().then(function (_) {
                     return gs(wrapper_view, instance.getState());
                 });
@@ -403,7 +425,7 @@ var container = exports.container = function container(view) {
                 };
             }();
 
-            if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+            if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
         }
 
         r.resolve = function (_) {
