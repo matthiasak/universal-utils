@@ -6,19 +6,22 @@ export const cacheCreator = () => {
     let {REDIS_URL} = process.env
 
     if(REDIS_URL) {
+
         let client = require('redis').createClient(REDIS_URL)
 
         "ready,connect,error,reconnecting,end".split(',').map(event =>
-            client.on(event, msg => console.log(`Redis ${event} :: ${msg}`)))
+            client.on(event, msg => console.log(`Redis ${event} ${msg ? ' :: '+msg : ''}`)))
 
         const getItem = (key, expire) => {
             return new Promise((res,rej) => {
                 client.get(key, (err,data) => {
-                    if(err || !data) rej(`${key} not in cache`)
+                    if(err || !data) {
+                        return rej(`${key} not in cache`)
+                    }
                     data = JSON.parse(data)
                     let expired = expire || (+new Date) > data.expiresAt
                     if(expired) rej(`${key} is expired`)
-                    res(data)
+                    res(data.data)
                 })
             })
         }

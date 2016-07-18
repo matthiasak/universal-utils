@@ -16,22 +16,25 @@ var cacheCreator = exports.cacheCreator = function cacheCreator() {
 
     if (REDIS_URL) {
         var _ret = function () {
+
             var client = require('redis').createClient(REDIS_URL);
 
             "ready,connect,error,reconnecting,end".split(',').map(function (event) {
                 return client.on(event, function (msg) {
-                    return console.log('Redis ' + event + ' :: ' + msg);
+                    return console.log('Redis ' + event + ' ' + (msg ? ' :: ' + msg : ''));
                 });
             });
 
             var getItem = function getItem(key, expire) {
                 return new Promise(function (res, rej) {
                     client.get(key, function (err, data) {
-                        if (err || !data) rej(key + ' not in cache');
+                        if (err || !data) {
+                            return rej(key + ' not in cache');
+                        }
                         data = JSON.parse(data);
                         var expired = expire || +new Date() > data.expiresAt;
                         if (expired) rej(key + ' is expired');
-                        res(data);
+                        res(data.data);
                     });
                 });
             };

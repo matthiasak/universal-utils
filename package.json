@@ -27,6 +27,9 @@
     "redis": "2.x"
   },
   "dependencies": {
+    "babel-cli": "^6.10.1",
+    "babel-core": "^6.10.4",
+    "babel-preset-react": "^6.11.1",
     "isomorphic-fetch": "latest"
   },
   "devDependencies": {

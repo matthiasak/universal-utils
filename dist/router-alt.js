@@ -81,7 +81,7 @@ var router = exports.router = function router(routes) {
             return !!(routes[name] = fn);
         },
         remove: function remove(name) {
-            return !! delete routes[name] || true;
+            return !!delete routes[name] || true;
         },
         listen: listen,
         match: match,
