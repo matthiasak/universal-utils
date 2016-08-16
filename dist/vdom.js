@@ -54,6 +54,20 @@ var debounce = exports.debounce = function debounce(func, wait, immediate, timeo
     };
 };
 
+var hash = function hash(str) {
+    if (typeof str !== 'string') str = JSON.stringify(str);
+    var type = typeof str === 'undefined' ? 'undefined' : _typeof(str);
+    if (type === 'number') return str;
+    if (type !== 'string') str += '';
+
+    var hash = 0;
+    for (var i = 0, len = str.length; i < len; ++i) {
+        var c = str.charCodeAt(i);
+        hash = (hash << 5) - hash + c | 0;
+    }
+    return hash;
+};
+
 var m = exports.m = function m(selector) {
     for (var _len2 = arguments.length, children = Array(_len2 > 2 ? _len2 - 2 : 0), _key2 = 2; _key2 < _len2; _key2++) {
         children[_key2 - 2] = arguments[_key2];
@@ -71,6 +85,7 @@ var m = exports.m = function m(selector) {
     vdom.shouldUpdate = attrs.shouldUpdate;
     vdom.unload = attrs.unload;
     vdom.config = attrs.config;
+    vdom.hash = hash(vdom);
     delete attrs.unload;
     delete attrs.shouldUpdate;
     delete attrs.config;
@@ -171,6 +186,7 @@ var setAttrs = function setAttrs(_ref2, el) {
     var attrs = _ref2.attrs;
     var id = _ref2.id;
     var className = _ref2.className;
+    var hash = _ref2.hash;
 
     if (attrs) {
         for (var attr in attrs) {
@@ -194,6 +210,7 @@ var setAttrs = function setAttrs(_ref2, el) {
     if (_id) el.id = _id;
     var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
     if (_className) el.className = _className;
+    el.hash = hash;
 };
 
 // recycle or create a new el
@@ -226,6 +243,7 @@ var createTag = function createTag() {
     var shouldExchange = !el || !el.tagName || tag && el.tagName.toLowerCase() !== tag.toLowerCase();
     var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el);
 
+    if (el && el.hash === vdom.hash) return;
     if (!attrs) return;
     if (!_shouldUpdate && el) return;
 
