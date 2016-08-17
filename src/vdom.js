@@ -65,7 +65,7 @@ export const m = (selector, attrs=Object.create(null), ...children) => {
     vdom.shouldUpdate = attrs.shouldUpdate
     vdom.unload = attrs.unload
     vdom.config = attrs.config
-    vdom.hash = hash(vdom)
+    vdom.__hash = hash(vdom)
     delete attrs.unload
     delete attrs.shouldUpdate
     delete attrs.config
@@ -149,7 +149,7 @@ const stylify = style => {
     return s
 }
 
-const setAttrs = ({attrs, id, className, hash},el) => {
+const setAttrs = ({attrs, id, className, __hash},el) => {
     if(attrs){
         for(var attr in attrs){
             if(attr === 'style') {
@@ -168,7 +168,7 @@ const setAttrs = ({attrs, id, className, hash},el) => {
     if(_id) el.id = _id
     let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
     if(_className) el.className = _className
-    el.hash = hash
+    el.__hash = __hash
 }
 
 // recycle or create a new el
@@ -191,7 +191,7 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
         shouldExchange = !el || !el.tagName || (tag && el.tagName.toLowerCase() !== tag.toLowerCase()),
         _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el)
 
-    if(el && (el.hash === vdom.hash)) return
+    if(el && (el.__hash === vdom.__hash)) return
     if(!attrs) return
     if(!_shouldUpdate && el) return
 
