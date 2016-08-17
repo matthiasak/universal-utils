@@ -242,9 +242,7 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
 
     if(vdom.resolve instanceof Function){
         let i = parent.children.length
-        // console.log(1, {v, el, parent})
         return vdom.resolve().then(v => {
-            // console.log(2, {v, el, parent})
             if(!el) {
                 let x = createTag(v, null, parent)
                 insertAt(x, parent, i)
