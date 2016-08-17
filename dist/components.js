@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
+exports.app = exports.page = exports.hashrouter = exports.injectSVG = exports.loadSVG = exports.imageLoader = exports.scrambler = exports.wait = exports.range = exports.scramble = exports.chars = exports.markdown = exports.trackVisibility = exports.viewportHeight = exports.applinks = exports.chrome = exports.safari = exports.iOS = exports.google_plus = exports.twitter_card = exports.fb_instantarticle = exports.fb_opengraph = exports.googleAnalytics = exports.mobile_metas = exports.theme = exports.head = undefined;
 
 var _vdom = require('./vdom');
 
@@ -11,7 +12,7 @@ var _routerAlt = require('./router-alt');
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } /* huge ups to John Buschea (https://github.com/joshbuchea/HEAD) */
 
 
-var head = function head() {
+var head = exports.head = function head() {
     for (var _len = arguments.length, c = Array(_len), _key = 0; _key < _len; _key++) {
         c[_key] = arguments[_key];
     }
@@ -26,12 +27,12 @@ var head = function head() {
 };
 
 // More info: https://developer.chrome.com/multidevice/android/installtohomescreen
-var theme = function theme() {
+var theme = exports.theme = function theme() {
     var color = arguments.length <= 0 || arguments[0] === undefined ? 'black' : arguments[0];
     return [(0, _vdom.m)('meta', { name: 'theme-color', content: color }), (0, _vdom.m)('meta', { name: 'msapplication-TileColor', content: color })];
 };
 
-var mobile_metas = function mobile_metas() {
+var mobile_metas = exports.mobile_metas = function mobile_metas() {
     var title = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
     var img = arguments.length <= 1 || arguments[1] === undefined ? 'icon' : arguments[1];
     var manifest = arguments.length <= 2 || arguments[2] === undefined ? 'manifest' : arguments[2];
@@ -46,7 +47,7 @@ var mobile_metas = function mobile_metas() {
 /**
  * Google Analytics
  */
-var googleAnalytics = function googleAnalytics(id) {
+var googleAnalytics = exports.googleAnalytics = function googleAnalytics(id) {
     var x = function x() {
         window.ga = window.ga || function () {
             window.ga.q = (window.ga.q || []).push(arguments);
@@ -61,32 +62,32 @@ var googleAnalytics = function googleAnalytics(id) {
 // Facebook: https://developers.facebook.com/docs/sharing/webmasters#markup
 // Open Graph: http://ogp.me/
 
-var fb_opengraph = function fb_opengraph(app_id, url, title, img, site_name, author) {
+var fb_opengraph = exports.fb_opengraph = function fb_opengraph(app_id, url, title, img, site_name, author) {
     return ['fb:app_id,' + app_id, 'og:url,' + url, 'og:type,website', 'og:title,' + title, 'og:image,' + img, 'og:description,' + description, 'og:site_name,' + site_name, 'og:locale,en_US', 'article:author,' + author].map(function (x, i, a) {
         var p = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
         return (0, _vdom.m)('meta', { property: p[0], content: p[1] });
     });
 };
 
-var fb_instantarticle = function fb_instantarticle(article_url, style) {
+var fb_instantarticle = exports.fb_instantarticle = function fb_instantarticle(article_url, style) {
     return [(0, _vdom.m)('meta', { property: "op:markup_version", content: "v1.0" }), (0, _vdom.m)('link', { rel: "canonical", href: article_url }), (0, _vdom.m)('meta', { property: "fb:article_style", content: style })];
 };
 
 // More info: https://dev.twitter.com/cards/getting-started
 // Validate: https://dev.twitter.com/docs/cards/validation/validator
-var twitter_card = function twitter_card(summary, site_account, individual_account, url, title, description, image) {
+var twitter_card = exports.twitter_card = function twitter_card(summary, site_account, individual_account, url, title, description, image) {
     return ['twitter:card,' + summary, 'twitter:site,@' + site_account, 'twitter:creator,@' + individual_account, 'twitter:url,' + url, 'twitter:title,' + title, 'twitter:description,' + description, 'twitter:image,' + image].map(function (x, i, a) {
         var n = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
         return (0, _vdom.m)('meta', { name: n[0], content: n[1] });
     });
 };
 
-var google_plus = function google_plus(page, title, desc, img) {
+var google_plus = exports.google_plus = function google_plus(page, title, desc, img) {
     return [(0, _vdom.m)('link', { href: 'https://plus.google.com/+' + page, rel: 'publisher' }), (0, _vdom.m)('meta', { itemprop: "name", content: title }), (0, _vdom.m)('meta', { itemprop: "description", content: desc }), (0, _vdom.m)('meta', { itemprop: "image", content: img })];
 };
 
 // More info: https://developer.apple.com/safari/library/documentation/appleapplications/reference/safarihtmlref/articles/metatags.html
-var iOS = function iOS(app_id, affiliate_id, app_arg) {
+var iOS = exports.iOS = function iOS(app_id, affiliate_id, app_arg) {
     var telephone = arguments.length <= 3 || arguments[3] === undefined ? 'yes' : arguments[3];
     var title = arguments[4];
     return [
@@ -104,18 +105,18 @@ var iOS = function iOS(app_id, affiliate_id, app_arg) {
 };
 
 // Pinned Site - Safari
-var safari = function safari() {
+var safari = exports.safari = function safari() {
     var name = arguments.length <= 0 || arguments[0] === undefined ? 'icon' : arguments[0];
     var color = arguments.length <= 1 || arguments[1] === undefined ? 'red' : arguments[1];
     return (0, _vdom.m)('link', { rel: "mask-icon", href: name + '.svg', color: color });
 };
 
 // Disable translation prompt
-var chrome = function chrome(app_id) {
+var chrome = exports.chrome = function chrome(app_id) {
     return [(0, _vdom.m)('link', { rel: "chrome-webstore-item", href: 'https://chrome.google.com/webstore/detail/' + app_id }), (0, _vdom.m)('meta', { name: 'google', value: 'notranslate' })];
 };
 
-var applinks = function applinks(app_store_id, name, android_pkg, docs_url) {
+var applinks = exports.applinks = function applinks(app_store_id, name, android_pkg, docs_url) {
     return [
     // iOS
     'al:ios:url,applinks://docs', 'al:ios:app_store_id,' + app_store_id, 'al:ios:app_name,' + name,
@@ -146,11 +147,11 @@ likely include with your SCSS for a project, that makes these styles hide/show t
 }
  */
 
-var viewportHeight = function viewportHeight(_) {
+var viewportHeight = exports.viewportHeight = function viewportHeight(_) {
     return Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 };
 
-var trackVisibility = function trackVisibility(component) {
+var trackVisibility = exports.trackVisibility = function trackVisibility(component) {
     var el = void 0,
         visible = el.getBoundingClientRect instanceof Function ? false : true;
 
@@ -190,7 +191,7 @@ var trackVisibility = function trackVisibility(component) {
  * into a markdeep/markdown rendered section
 */
 
-var markdown = function markdown(content) {
+var markdown = exports.markdown = function markdown(content) {
     var markdownToHtml = arguments.length <= 1 || arguments[1] === undefined ? function (c) {
         return global.markdeep.format(c);
     } : arguments[1];
@@ -206,23 +207,23 @@ var markdown = function markdown(content) {
  *
  * m('span', {config: animatingTextConfig('test me out')})
  */
-var chars = '#*^-+=!f0123456789_';
-var scramble = function scramble(str) {
+var chars = exports.chars = '#*^-+=!f0123456789_';
+var scramble = exports.scramble = function scramble(str) {
     var from = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
     return str.slice(0, from) + str.slice(from).split('').map(function (x) {
         return x === ' ' ? x : chars[range(0, chars.length)];
     }).join('');
 };
-var range = function range(min, max) {
+var range = exports.range = function range(min, max) {
     return Math.floor(Math.random() * (max - min) + min);
 };
-var wait = function wait(ms) {
+var wait = exports.wait = function wait(ms) {
     return new Promise(function (res) {
         return setTimeout(res, ms);
     });
 };
 
-var scrambler = function scrambler(str) {
+var scrambler = exports.scrambler = function scrambler(str) {
     var interval = arguments.length <= 1 || arguments[1] === undefined ? 33 : arguments[1];
     var i = arguments.length <= 2 || arguments[2] === undefined ? 0 : arguments[2];
     var delay = arguments.length <= 3 || arguments[3] === undefined ? 0 : arguments[3];
@@ -244,7 +245,7 @@ var scrambler = function scrambler(str) {
  *
  * imageLoader(url, m('div'))
  */
-var imageLoader = function imageLoader(url, comp) {
+var imageLoader = exports.imageLoader = function imageLoader(url, comp) {
     var x = comp,
         image = void 0,
         loaded = false;
@@ -273,12 +274,12 @@ var imageLoader = function imageLoader(url, comp) {
 /**
  * load an SVG and inject it onto the page
  */
-var loadSVG = function loadSVG(url) {
+var loadSVG = exports.loadSVG = function loadSVG(url) {
     return fetch(url).then(function (r) {
         return r.text();
     });
 };
-var injectSVG = function injectSVG(url) {
+var injectSVG = exports.injectSVG = function injectSVG(url) {
     return (0, _vdom.container)(function (data) {
         return (0, _vdom.m)('div', { config: function config(el) {
                 return el.innerHTML = data.svg;
@@ -290,7 +291,7 @@ var injectSVG = function injectSVG(url) {
  * hashroute-driven router
  */
 // router implementation
-var hashrouter = function hashrouter() {
+var hashrouter = exports.hashrouter = function hashrouter() {
     var routes = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
     var def = arguments.length <= 1 || arguments[1] === undefined ? '#' : arguments[1];
     var current = arguments[2];
@@ -309,7 +310,7 @@ var hashrouter = function hashrouter() {
 /**
  * page component that returns an entire html component
  */
-var page = function page(main, title) {
+var page = exports.page = function page(main, title) {
     var css = arguments.length <= 2 || arguments[2] === undefined ? '/style.css' : arguments[2];
     var googleAnalyticsId = arguments[3];
     return [head(theme(), mobile_metas(title), (0, _vdom.m)('link', { type: 'text/css', rel: 'stylesheet', href: css }), googleAnalyticsId && googleAnalytics(googleAnalyticsId)), (0, _vdom.m)('body', main)];
@@ -318,33 +319,10 @@ var page = function page(main, title) {
 /**
  * mount the entire page() component to the DOM
  */
-var app = function app(routes, def, title, css, analyticsId) {
+var app = exports.app = function app(routes, def, title, css, analyticsId) {
     var router = hashrouter(routes, def);
     var p = page(router, title, css, analyticsId);
     return function () {
         return (0, _vdom.mount)(p, (0, _vdom.qs)('html', document));
     };
-};
-
-exports.default = {
-    head: head,
-    theme: theme,
-    mobile_metas: mobile_metas,
-    googleAnalytics: googleAnalytics,
-    fb_opengraph: fb_opengraph,
-    fb_instantarticle: fb_instantarticle,
-    twitter_card: twitter_card,
-    google_plus: google_plus,
-    iOS: iOS,
-    safari: safari,
-    chrome: chrome,
-    applinks: applinks,
-    trackVisibility: trackVisibility,
-    markdown: markdown,
-    scrambler: scrambler,
-    imageLoader: imageLoader,
-    injectSVG: injectSVG,
-    hashrouter: hashrouter,
-    page: page,
-    app: app
 };
