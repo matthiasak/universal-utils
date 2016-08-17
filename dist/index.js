@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.meta = exports.model = exports.hamt = exports.lazy = exports.ot = exports.fp = exports.vdom = exports.csp = exports.mux = exports.router = exports.cache = exports.resource = exports.store = exports.fetch = undefined;
+exports.meta = exports.model = exports.hamt = exports.lazy = exports.ot = exports.fp = exports.components = exports.vdom = exports.csp = exports.mux = exports.router = exports.cache = exports.resource = exports.store = exports.fetch = undefined;
 
 var _fetch2 = require('./fetch');
 
@@ -36,6 +36,10 @@ var _csp = _interopRequireWildcard(_csp2);
 var _vdom2 = require('./vdom');
 
 var _vdom = _interopRequireWildcard(_vdom2);
+
+var _components2 = require('./components');
+
+var _components = _interopRequireWildcard(_components2);
 
 var _fp2 = require('./fp');
 
@@ -71,6 +75,7 @@ exports.router = _router;
 exports.mux = _mux;
 exports.csp = _csp;
 exports.vdom = _vdom;
+exports.components = _components;
 exports.fp = _fp;
 exports.ot = _ot;
 exports.lazy = _lazy;

@@ -297,10 +297,8 @@ var applyUpdates = function applyUpdates(vdom, el) {
     if (vdom.resolve instanceof Function) {
         var _ret = function () {
             var i = parent.children.length;
-            // console.log(1, {v, el, parent})
             return {
                 v: vdom.resolve().then(function (v) {
-                    // console.log(2, {v, el, parent})
                     if (!el) {
                         var x = createTag(v, null, parent);
                         insertAt(x, parent, i);

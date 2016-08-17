@@ -1,6 +1,6 @@
 /* huge ups to John Buschea (https://github.com/joshbuchea/HEAD) */
 import {debounce,m,html,rAF,mount,update,qs,container} from './vdom'
-import {router:_r} from './router-alt'
+import {router} from './router-alt'
 
 const head = (...c) => {
     let loaded_once = false
@@ -261,7 +261,7 @@ const hashrouter = (
     def='#',
     current
 ) => {
-    let x = _r(routes, (el) => {
+    let x = router(routes, (el) => {
         current = el
         update()
     })
