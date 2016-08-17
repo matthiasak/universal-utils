@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.app = exports.page = exports.hashrouter = exports.injectSVG = exports.loadSVG = exports.imageLoader = exports.scrambler = exports.wait = exports.range = exports.scramble = exports.chars = exports.markdown = exports.trackVisibility = exports.viewportHeight = exports.applinks = exports.chrome = exports.safari = exports.iOS = exports.google_plus = exports.twitter_card = exports.fb_instantarticle = exports.fb_opengraph = exports.googleAnalytics = exports.mobile_metas = exports.theme = exports.head = undefined;
 
-var _vdom = require('./vdom');
+var _vdom2 = require('./vdom');
 
 var _routerAlt = require('./router-alt');
 
@@ -21,7 +21,7 @@ var head = exports.head = function head() {
     var config = function config(el) {
         return loaded_once = true;
     };
-    return (0, _vdom.m)('head', { config: config, shouldUpdate: function shouldUpdate(el) {
+    return (0, _vdom2.m)('head', { config: config, shouldUpdate: function shouldUpdate(el) {
             return !el;
         } }, c);
 };
@@ -29,19 +29,19 @@ var head = exports.head = function head() {
 // More info: https://developer.chrome.com/multidevice/android/installtohomescreen
 var theme = exports.theme = function theme() {
     var color = arguments.length <= 0 || arguments[0] === undefined ? 'black' : arguments[0];
-    return [(0, _vdom.m)('meta', { name: 'theme-color', content: color }), (0, _vdom.m)('meta', { name: 'msapplication-TileColor', content: color })];
+    return [(0, _vdom2.m)('meta', { name: 'theme-color', content: color }), (0, _vdom2.m)('meta', { name: 'msapplication-TileColor', content: color })];
 };
 
 var mobile_metas = exports.mobile_metas = function mobile_metas() {
     var title = arguments.length <= 0 || arguments[0] === undefined ? '' : arguments[0];
     var img = arguments.length <= 1 || arguments[1] === undefined ? 'icon' : arguments[1];
     var manifest = arguments.length <= 2 || arguments[2] === undefined ? 'manifest' : arguments[2];
-    return [(0, _vdom.m)('meta', { charset: 'utf8' }), (0, _vdom.m)('meta', { 'http-equiv': 'x-ua-compatible', content: 'ie=edge' }), (0, _vdom.m)('meta', { name: "viewport", content: "width=device-width, initial-scale=1.0, shrink-to-fit=no" }), (0, _vdom.m)('title', title)].concat(_toConsumableArray(['HandheldFriendly,True', 'MobileOptimized,320', 'mobile-web-app-capable,yes', 'apple-mobile-web-app-capable,yes', 'apple-mobile-web-app-title,' + title, 'msapplication-TileImage,/' + img + '-144x144.png', 'msapplication-square70x70logo,/smalltile.png', 'msapplication-square150x150logo,/mediumtile.png', 'msapplication-wide310x150logo,/widetile.png', 'msapplication-square310x310logo,/largetile.png'].map(function (x) {
-        return (0, _vdom.m)('meta', { name: x.split(',')[0], content: x.split(',')[1] });
+    return [(0, _vdom2.m)('meta', { charset: 'utf8' }), (0, _vdom2.m)('meta', { 'http-equiv': 'x-ua-compatible', content: 'ie=edge' }), (0, _vdom2.m)('meta', { name: "viewport", content: "width=device-width, initial-scale=1.0, shrink-to-fit=no" }), (0, _vdom2.m)('title', title)].concat(_toConsumableArray(['HandheldFriendly,True', 'MobileOptimized,320', 'mobile-web-app-capable,yes', 'apple-mobile-web-app-capable,yes', 'apple-mobile-web-app-title,' + title, 'msapplication-TileImage,/' + img + '-144x144.png', 'msapplication-square70x70logo,/smalltile.png', 'msapplication-square150x150logo,/mediumtile.png', 'msapplication-wide310x150logo,/widetile.png', 'msapplication-square310x310logo,/largetile.png'].map(function (x) {
+        return (0, _vdom2.m)('meta', { name: x.split(',')[0], content: x.split(',')[1] });
     })), [
     // ...([512,180,152,144,120,114,76,72].map(x =>
     //     m('link', {rel: 'apple-touch-icon-precomposed', sizes:`${x}x${x}`, href:`/${img}-${x}x${x}.png`}))),
-    (0, _vdom.m)('link', { rel: 'apple-touch-icon-precomposed', href: '/' + img + '-180x180.png' }), (0, _vdom.m)('link', { rel: 'apple-touch-startup-image', href: '/' + img + '-startup.png' }), (0, _vdom.m)('link', { rel: 'shortcut icon', href: '/' + img + '.ico', type: 'image/x-icon' }), (0, _vdom.m)('link', { rel: 'manifest', href: '/' + manifest + '.json' })]);
+    (0, _vdom2.m)('link', { rel: 'apple-touch-icon-precomposed', href: '/' + img + '-180x180.png' }), (0, _vdom2.m)('link', { rel: 'apple-touch-startup-image', href: '/' + img + '-startup.png' }), (0, _vdom2.m)('link', { rel: 'shortcut icon', href: '/' + img + '.ico', type: 'image/x-icon' }), (0, _vdom2.m)('link', { rel: 'manifest', href: '/' + manifest + '.json' })]);
 };
 
 /**
@@ -56,7 +56,7 @@ var googleAnalytics = exports.googleAnalytics = function googleAnalytics(id) {
         ga('create', id, 'auto');
         ga('send', 'pageview');
     };
-    return (0, _vdom.m)('script', { config: x, src: 'https://www.google-analytics.com/analytics.js', l: 1 * new Date(), async: 1 });
+    return (0, _vdom2.m)('script', { config: x, src: 'https://www.google-analytics.com/analytics.js', l: 1 * new Date(), async: 1 });
 };
 
 // Facebook: https://developers.facebook.com/docs/sharing/webmasters#markup
@@ -65,12 +65,12 @@ var googleAnalytics = exports.googleAnalytics = function googleAnalytics(id) {
 var fb_opengraph = exports.fb_opengraph = function fb_opengraph(app_id, url, title, img, site_name, author) {
     return ['fb:app_id,' + app_id, 'og:url,' + url, 'og:type,website', 'og:title,' + title, 'og:image,' + img, 'og:description,' + description, 'og:site_name,' + site_name, 'og:locale,en_US', 'article:author,' + author].map(function (x, i, a) {
         var p = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
-        return (0, _vdom.m)('meta', { property: p[0], content: p[1] });
+        return (0, _vdom2.m)('meta', { property: p[0], content: p[1] });
     });
 };
 
 var fb_instantarticle = exports.fb_instantarticle = function fb_instantarticle(article_url, style) {
-    return [(0, _vdom.m)('meta', { property: "op:markup_version", content: "v1.0" }), (0, _vdom.m)('link', { rel: "canonical", href: article_url }), (0, _vdom.m)('meta', { property: "fb:article_style", content: style })];
+    return [(0, _vdom2.m)('meta', { property: "op:markup_version", content: "v1.0" }), (0, _vdom2.m)('link', { rel: "canonical", href: article_url }), (0, _vdom2.m)('meta', { property: "fb:article_style", content: style })];
 };
 
 // More info: https://dev.twitter.com/cards/getting-started
@@ -78,12 +78,12 @@ var fb_instantarticle = exports.fb_instantarticle = function fb_instantarticle(a
 var twitter_card = exports.twitter_card = function twitter_card(summary, site_account, individual_account, url, title, description, image) {
     return ['twitter:card,' + summary, 'twitter:site,@' + site_account, 'twitter:creator,@' + individual_account, 'twitter:url,' + url, 'twitter:title,' + title, 'twitter:description,' + description, 'twitter:image,' + image].map(function (x, i, a) {
         var n = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
-        return (0, _vdom.m)('meta', { name: n[0], content: n[1] });
+        return (0, _vdom2.m)('meta', { name: n[0], content: n[1] });
     });
 };
 
 var google_plus = exports.google_plus = function google_plus(page, title, desc, img) {
-    return [(0, _vdom.m)('link', { href: 'https://plus.google.com/+' + page, rel: 'publisher' }), (0, _vdom.m)('meta', { itemprop: "name", content: title }), (0, _vdom.m)('meta', { itemprop: "description", content: desc }), (0, _vdom.m)('meta', { itemprop: "image", content: img })];
+    return [(0, _vdom2.m)('link', { href: 'https://plus.google.com/+' + page, rel: 'publisher' }), (0, _vdom2.m)('meta', { itemprop: "name", content: title }), (0, _vdom2.m)('meta', { itemprop: "description", content: desc }), (0, _vdom2.m)('meta', { itemprop: "image", content: img })];
 };
 
 // More info: https://developer.apple.com/safari/library/documentation/appleapplications/reference/safarihtmlref/articles/metatags.html
@@ -100,7 +100,7 @@ var iOS = exports.iOS = function iOS(app_id, affiliate_id, app_arg) {
     // Add to Home Screen
     'apple-mobile-web-app-capable,yes', 'apple-mobile-web-app-status-bar-style,black', 'apple-mobile-web-app-title,' + title].map(function (x, i, a) {
         var n = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
-        return (0, _vdom.m)('meta', { name: n[0], content: n[1] });
+        return (0, _vdom2.m)('meta', { name: n[0], content: n[1] });
     });
 };
 
@@ -108,12 +108,12 @@ var iOS = exports.iOS = function iOS(app_id, affiliate_id, app_arg) {
 var safari = exports.safari = function safari() {
     var name = arguments.length <= 0 || arguments[0] === undefined ? 'icon' : arguments[0];
     var color = arguments.length <= 1 || arguments[1] === undefined ? 'red' : arguments[1];
-    return (0, _vdom.m)('link', { rel: "mask-icon", href: name + '.svg', color: color });
+    return (0, _vdom2.m)('link', { rel: "mask-icon", href: name + '.svg', color: color });
 };
 
 // Disable translation prompt
 var chrome = exports.chrome = function chrome(app_id) {
-    return [(0, _vdom.m)('link', { rel: "chrome-webstore-item", href: 'https://chrome.google.com/webstore/detail/' + app_id }), (0, _vdom.m)('meta', { name: 'google', value: 'notranslate' })];
+    return [(0, _vdom2.m)('link', { rel: "chrome-webstore-item", href: 'https://chrome.google.com/webstore/detail/' + app_id }), (0, _vdom2.m)('meta', { name: 'google', value: 'notranslate' })];
 };
 
 var applinks = exports.applinks = function applinks(app_store_id, name, android_pkg, docs_url) {
@@ -127,7 +127,7 @@ var applinks = exports.applinks = function applinks(app_store_id, name, android_
     // More info: http://applinks.org/documentation/
     map(function (x, i, a) {
         var n = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
-        return (0, _vdom.m)('meta', { property: n[0], content: n[1] });
+        return (0, _vdom2.m)('meta', { property: n[0], content: n[1] });
     });
 };
 
@@ -155,7 +155,7 @@ var trackVisibility = exports.trackVisibility = function trackVisibility(compone
     var el = void 0,
         visible = el.getBoundingClientRect instanceof Function ? false : true;
 
-    var onScroll = (0, _vdom.debounce)(function (ev) {
+    var onScroll = (0, _vdom2.debounce)(function (ev) {
         if (!el.getBoundingClientRect instanceof Function) return;
 
         var _el$getBoundingClient = el.getBoundingClientRect();
@@ -181,9 +181,9 @@ var trackVisibility = exports.trackVisibility = function trackVisibility(compone
         return window.removeEventListener('scroll', onScroll);
     };
 
-    (0, _vdom.rAF)(onScroll);
+    (0, _vdom2.rAF)(onScroll);
 
-    return (0, _vdom.m)('div.invisible', { config: startScroll, unload: endScroll }, component);
+    return (0, _vdom2.m)('div.invisible', { config: startScroll, unload: endScroll }, component);
 };
 
 /**
@@ -199,7 +199,7 @@ var markdown = exports.markdown = function markdown(content) {
     var config = function config(element, init) {
         element.innerHTML = markdownToHtml(content);
     };
-    return (0, _vdom.m)('.markdeep', { config: config });
+    return (0, _vdom2.m)('.markdeep', { config: config });
 };
 
 /**
@@ -280,8 +280,8 @@ var loadSVG = exports.loadSVG = function loadSVG(url) {
     });
 };
 var injectSVG = exports.injectSVG = function injectSVG(url) {
-    return (0, _vdom.container)(function (data) {
-        return (0, _vdom.m)('div', { config: function config(el) {
+    return (0, _vdom2.container)(function (data) {
+        return (0, _vdom2.m)('div', { config: function config(el) {
                 return el.innerHTML = data.svg;
             } });
     }, { svg: loadSVG.bind(null, url) });
@@ -296,9 +296,9 @@ var hashrouter = exports.hashrouter = function hashrouter() {
     var def = arguments.length <= 1 || arguments[1] === undefined ? '#' : arguments[1];
     var current = arguments[2];
 
-    var x = (0, _routerAlt.router)(routes, function (el) {
-        current = el;
-        (0, _vdom.update)();
+    var x = (0, _routerAlt.router)(routes, function (_vdom) {
+        current = _vdom;
+        (0, _vdom2.update)();
     });
     x.listen();
     x.trigger((window.location.hash || def).slice(1));
@@ -313,7 +313,7 @@ var hashrouter = exports.hashrouter = function hashrouter() {
 var page = exports.page = function page(main, title) {
     var css = arguments.length <= 2 || arguments[2] === undefined ? '/style.css' : arguments[2];
     var googleAnalyticsId = arguments[3];
-    return [head(theme(), mobile_metas(title), (0, _vdom.m)('link', { type: 'text/css', rel: 'stylesheet', href: css }), googleAnalyticsId && googleAnalytics(googleAnalyticsId)), (0, _vdom.m)('body', main)];
+    return [head(theme(), mobile_metas(title), (0, _vdom2.m)('link', { type: 'text/css', rel: 'stylesheet', href: css }), googleAnalyticsId && googleAnalytics(googleAnalyticsId)), (0, _vdom2.m)('body', main)];
 };
 
 /**
@@ -323,6 +323,6 @@ var app = exports.app = function app(routes, def, title, css, analyticsId) {
     var router = hashrouter(routes, def);
     var p = page(router, title, css, analyticsId);
     return function () {
-        return (0, _vdom.mount)(p, (0, _vdom.qs)('html', document));
+        return (0, _vdom2.mount)(p, (0, _vdom2.qs)('html', document));
     };
 };

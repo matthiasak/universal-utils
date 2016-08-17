@@ -38,15 +38,10 @@ export const debounce = (func, wait, immediate, timeout) =>
         callNow && func(...args)
     }
 
-const hash = str => {
-    if(typeof str !== 'string') str = JSON.stringify(str)
-    const type = typeof str
-    if (type === 'number') return str
-    if (type !== 'string') str += ''
-
+const hash = (v,_v=JSON.stringify(v)) => {
     let hash = 0
-    for (let i = 0, len = str.length; i < len; ++i) {
-        const c = str.charCodeAt(i)
+    for (let i = 0, len = _v.length; i < len; ++i) {
+        const c = _v.charCodeAt(i)
         hash = (((hash << 5) - hash) + c) | 0
     }
     return hash
@@ -163,7 +158,6 @@ const setAttrs = ({attrs, id, className, __hash},el) => {
             }
         }
     }
-
     let _id = attrs.id || id
     if(_id) el.id = _id
     let _className = ((attrs.className || '') + ' ' + (className || '')).trim()
@@ -173,7 +167,7 @@ const setAttrs = ({attrs, id, className, __hash},el) => {
 
 // recycle or create a new el
 const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) => {
-
+    let __vdom = vdom
     // make text nodes from primitive types
     if(typeof vdom !== 'object'){
         let t = document.createTextNode(vdom)
@@ -187,13 +181,14 @@ const createTag = (vdom=Object.create(null), el, parent=el&&el.parentElement) =>
     }
 
     // else make an HTMLElement from "tag" types
-    let {tag, attrs, id, className, unload, shouldUpdate, config} = vdom,
+    let {tag, attrs, id, className, unload, shouldUpdate, config, __hash} = vdom,
         shouldExchange = !el || !el.tagName || (tag && el.tagName.toLowerCase() !== tag.toLowerCase()),
         _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el)
 
-    if(el && (el.__hash === vdom.__hash)) return
     if(!attrs) return
-    if(!_shouldUpdate && el) return
+    if(el && (!_shouldUpdate || ((!vdom instanceof Function) && el.__hash === __hash))) {
+      return
+    }
 
     if(shouldExchange){
         let t = document.createElement(tag)
@@ -277,7 +272,6 @@ const applyUpdates = (vdom, el, parent=el&&el.parentElement) => {
 }
 
 export const qs = (s='body', el=document) => el.querySelector(s)
-
 
 const resolver  = (states = {}) => {
     let promises = [],
@@ -399,8 +393,7 @@ const toHTML = _vdom => {
     })
 }
 
-export const html = (...v) =>
-    Promise.all(v.map(toHTML)).then(x => x.filter(x => !!x).join(''))
+export const html = (...v) => Promise.all(v.map(toHTML)).then(x => x.filter(x => !!x).join(''))
 
 
 

@@ -261,8 +261,8 @@ export const hashrouter = (
     def='#',
     current
 ) => {
-    let x = router(routes, (el) => {
-        current = el
+    let x = router(routes, _vdom => {
+        current = _vdom
         update()
     })
     x.listen()

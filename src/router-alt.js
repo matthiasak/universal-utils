@@ -15,7 +15,6 @@ export const router = (routes, fn=(a,b)=>a(b)) => {
         for(let x in routes){
             if(routes.hasOwnProperty(x)){
                 let v = match(x,path)
-
                 if(v){
                     fn(routes[x], v)
                     return true

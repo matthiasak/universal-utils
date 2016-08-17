@@ -31,7 +31,6 @@ var router = exports.router = function router(routes) {
         for (var x in routes) {
             if (routes.hasOwnProperty(x)) {
                 var v = match(x, path);
-
                 if (v) {
                     fn(routes[x], v);
                     return true;

@@ -54,15 +54,12 @@ var debounce = exports.debounce = function debounce(func, wait, immediate, timeo
     };
 };
 
-var hash = function hash(str) {
-    if (typeof str !== 'string') str = JSON.stringify(str);
-    var type = typeof str === 'undefined' ? 'undefined' : _typeof(str);
-    if (type === 'number') return str;
-    if (type !== 'string') str += '';
+var hash = function hash(v) {
+    var _v = arguments.length <= 1 || arguments[1] === undefined ? JSON.stringify(v) : arguments[1];
 
     var hash = 0;
-    for (var i = 0, len = str.length; i < len; ++i) {
-        var c = str.charCodeAt(i);
+    for (var i = 0, len = _v.length; i < len; ++i) {
+        var c = _v.charCodeAt(i);
         hash = (hash << 5) - hash + c | 0;
     }
     return hash;
@@ -205,7 +202,6 @@ var setAttrs = function setAttrs(_ref2, el) {
             }
         }
     }
-
     var _id = attrs.id || id;
     if (_id) el.id = _id;
     var _className = ((attrs.className || '') + ' ' + (className || '')).trim();
@@ -219,7 +215,7 @@ var createTag = function createTag() {
     var el = arguments[1];
     var parent = arguments.length <= 2 || arguments[2] === undefined ? el && el.parentElement : arguments[2];
 
-
+    var __vdom = vdom;
     // make text nodes from primitive types
     if ((typeof vdom === 'undefined' ? 'undefined' : _typeof(vdom)) !== 'object') {
         var t = document.createTextNode(vdom);
@@ -240,12 +236,14 @@ var createTag = function createTag() {
     var unload = vdom.unload;
     var shouldUpdate = vdom.shouldUpdate;
     var config = vdom.config;
+    var __hash = vdom.__hash;
     var shouldExchange = !el || !el.tagName || tag && el.tagName.toLowerCase() !== tag.toLowerCase();
     var _shouldUpdate = !(shouldUpdate instanceof Function) || shouldUpdate(el);
 
-    if (el && el.__hash === vdom.__hash) return;
     if (!attrs) return;
-    if (!_shouldUpdate && el) return;
+    if (el && (!_shouldUpdate || !vdom instanceof Function && el.__hash === __hash)) {
+        return;
+    }
 
     if (shouldExchange) {
         var _t = document.createElement(tag);
