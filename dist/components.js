@@ -3,7 +3,6 @@
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.app = exports.page = exports.hashrouter = exports.injectSVG = exports.imageLoader = exports.scrambler = exports.markdown = exports.trackVisibility = exports.applinks = exports.chrome = exports.safari = exports.iOS = exports.google_plus = exports.twitter_card = exports.fb_instantarticle = exports.fb_opengraph = exports.googleAnalytics = exports.mobile_metas = exports.theme = exports.head = undefined;
 
 var _vdom = require('./vdom');
 
@@ -327,23 +326,25 @@ var app = function app(routes, def, title, css, analyticsId) {
     };
 };
 
-exports.head = head;
-exports.theme = theme;
-exports.mobile_metas = mobile_metas;
-exports.googleAnalytics = googleAnalytics;
-exports.fb_opengraph = fb_opengraph;
-exports.fb_instantarticle = fb_instantarticle;
-exports.twitter_card = twitter_card;
-exports.google_plus = google_plus;
-exports.iOS = iOS;
-exports.safari = safari;
-exports.chrome = chrome;
-exports.applinks = applinks;
-exports.trackVisibility = trackVisibility;
-exports.markdown = markdown;
-exports.scrambler = scrambler;
-exports.imageLoader = imageLoader;
-exports.injectSVG = injectSVG;
-exports.hashrouter = hashrouter;
-exports.page = page;
-exports.app = app;
+exports.default = {
+    head: head,
+    theme: theme,
+    mobile_metas: mobile_metas,
+    googleAnalytics: googleAnalytics,
+    fb_opengraph: fb_opengraph,
+    fb_instantarticle: fb_instantarticle,
+    twitter_card: twitter_card,
+    google_plus: google_plus,
+    iOS: iOS,
+    safari: safari,
+    chrome: chrome,
+    applinks: applinks,
+    trackVisibility: trackVisibility,
+    markdown: markdown,
+    scrambler: scrambler,
+    imageLoader: imageLoader,
+    injectSVG: injectSVG,
+    hashrouter: hashrouter,
+    page: page,
+    app: app
+};

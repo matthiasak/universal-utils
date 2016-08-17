@@ -292,7 +292,7 @@ const app = (routes, def, title, css, analyticsId) => {
     return () => mount(p, qs('html', document))
 }
 
-export {
+export default {
     head,
     theme,
     mobile_metas,
