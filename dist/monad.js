@@ -21,19 +21,19 @@ var bind = function bind(f, g) {
 };
 
 var of = function of(val) {
-    var isNothing = function isNothing() {
-        return !val;
-    };
+    var isNothing = !val;
     var map = function map() {
         var f = arguments.length <= 0 || arguments[0] === undefined ? ident : arguments[0];
 
-        if (val instanceof Array) return isNothing() ? of([]) : of(val.map(f));
+        if (val instanceof Array) return isNothing ? of([]) : of(val.filter(function (x) {
+            return !x.isNothing;
+        }).map(f));
 
-        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') return isNothing() ? of({}) : of(keys(val).reduce(function (acc, key) {
+        if (val && (typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') return isNothing ? of({}) : of(keys(val).reduce(function (acc, key) {
             return _extends({}, acc, _defineProperty({}, key, f(val[key], key)));
         }, {}));
 
-        return isNothing() ? of(null) : of(f(val));
+        return isNothing ? of(null) : of(f(val));
     };
 
     return {
@@ -46,9 +46,28 @@ var of = function of(val) {
 exports.default = of;
 
 // log(
-//     of({matt:1, ian:2, jeremy:3})
+//     of(null)
 //   .map(x => x+1)
-//     .map(x => x*3)
-//     .map(x => x*5 + 10+x)
-//     .map(x => x+' wha?')
+//   .map(x => x*3)
+//   .map(x => x*5 + 10+x)
+//   .map(x => x+' wha?')
+//   .val+''
+// )
+
+// log(
+//     of([1,2,3])
+//   .map(x => x+1)
+//   .map(x => x*3)
+//   .map(x => x*5 + 10+x)
+//   .map(x => x+' wha?')
+//   .val+''
+// )
+
+// log(
+//     of({matt:28, ian:30, jeremy: 37})
+//   .map(x => x+1)
+//   .map(x => x*3)
+//   .map(x => x*5 + 10+x)
+//   .map(x => x+' wha?')
+//   .val
 // )
