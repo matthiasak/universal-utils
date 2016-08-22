@@ -1,47 +1,33 @@
-/*
-monad axioms
-1. unit(v).bind(f) === f(v)
-2. monad.bind(unit) === monad
-3. bind(bind(monad, f), g) === monad.bind(f).bind(g) === monad.bind(v => f(v).bind(g))
-*/
+const ident = x => x
+const keys = o => Object.keys(o)
+const bind = (f,g) => f(g())
 
-const monad = (mod) => {
-    let proto = {}
+const of = val => {
+    let isNothing = () => !val
+  let map = (f=ident) => {
+        if(val instanceof Array)
+          return isNothing() ? of([]) : of(val.map(f))
 
-    let unit = value => {
-        let monad = Object.create(proto)
-        monad.bind = (fn=x=>x,...a) => fn(value,...a)
-        if(mod instanceof Function) mod(monad, value)
-        return monad
+        if(typeof val === 'object')
+            return isNothing() ? of({}) : of(keys(val).reduce((acc,key) =>
+                ({ ...acc, [key]:f(val[key], key) }), {}))
+
+    return isNothing() ? of(null) : of(f(val))
     }
 
-    unit.lift = function(name,fn){
-        proto[name] = function(...a){
-            return unit(this.bind(fn, ...a))
-        }
-        return unit
+    return {
+        map,
+        isNothing,
+        val
     }
-
-    return unit
 }
 
-export default monad
+export default of
 
-/*
-
-// EXAMPLE USAGE:
-
-let loggable = monad()
-    .lift('double', a => a*2)
-
-let x = loggable(1).double()
-log(x.bind())
-
-let maybe = monad(function(m,v) {
-    if(v === null || v === undefined){
-        m.is_null = true
-        m.bind = () => m
-    }
-})
-
-log(maybe(null).bind(x => x*2).bind())*/
+// log(
+//     of({matt:1, ian:2, jeremy:3})
+//   .map(x => x+1)
+//     .map(x => x*3)
+//     .map(x => x*5 + 10+x)
+//     .map(x => x+' wha?')
+// )
