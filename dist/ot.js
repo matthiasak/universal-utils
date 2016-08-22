@@ -29,7 +29,6 @@ var computeIndices = function computeIndices() {
 
 var transform = exports.transform = function transform(_a, _b) {
     // tally retains
-
     var _computeIndices = computeIndices(_a, _b);
 
     var _computeIndices2 = _slicedToArray(_computeIndices, 2);

@@ -1,65 +1,54 @@
-"use strict";
+'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-/*
-monad axioms
-1. unit(v).bind(f) === f(v)
-2. monad.bind(unit) === monad
-3. bind(bind(monad, f), g) === monad.bind(f).bind(g) === monad.bind(v => f(v).bind(g))
-*/
 
-var monad = function monad(mod) {
-    var proto = {};
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-    var unit = function unit(value) {
-        var monad = Object.create(proto);
-        monad.bind = function () {
-            for (var _len = arguments.length, a = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                a[_key - 1] = arguments[_key];
-            }
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-            var fn = arguments.length <= 0 || arguments[0] === undefined ? function (x) {
-                return x;
-            } : arguments[0];
-            return fn.apply(undefined, [value].concat(a));
-        };
-        if (mod instanceof Function) mod(monad, value);
-        return monad;
-    };
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-    unit.lift = function (name, fn) {
-        proto[name] = function () {
-            for (var _len2 = arguments.length, a = Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-                a[_key2] = arguments[_key2];
-            }
-
-            return unit(this.bind.apply(this, [fn].concat(a)));
-        };
-        return unit;
-    };
-
-    return unit;
+var ident = function ident(x) {
+    return x;
+};
+var keys = function keys(o) {
+    return Object.keys(o);
+};
+var bind = function bind(f, g) {
+    return f(g());
 };
 
-exports.default = monad;
+var of = function of(val) {
+    var isNothing = function isNothing() {
+        return !val;
+    };
+    var map = function map() {
+        var f = arguments.length <= 0 || arguments[0] === undefined ? ident : arguments[0];
 
-/*
+        if (val instanceof Array) return isNothing() ? of([]) : of(val.map(f));
 
-// EXAMPLE USAGE:
+        if ((typeof val === 'undefined' ? 'undefined' : _typeof(val)) === 'object') return isNothing() ? of({}) : of(keys(val).reduce(function (acc, key) {
+            return _extends({}, acc, _defineProperty({}, key, f(val[key], key)));
+        }, {}));
 
-let loggable = monad()
-    .lift('double', a => a*2)
+        return isNothing() ? of(null) : of(f(val));
+    };
 
-let x = loggable(1).double()
-log(x.bind())
+    return {
+        map: map,
+        isNothing: isNothing,
+        val: val
+    };
+};
 
-let maybe = monad(function(m,v) {
-    if(v === null || v === undefined){
-        m.is_null = true
-        m.bind = () => m
-    }
-})
+exports.default = of;
 
-log(maybe(null).bind(x => x*2).bind())*/
+// log(
+//     of({matt:1, ian:2, jeremy:3})
+//   .map(x => x+1)
+//     .map(x => x*3)
+//     .map(x => x*5 + 10+x)
+//     .map(x => x+' wha?')
+// )

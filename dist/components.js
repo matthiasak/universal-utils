@@ -123,9 +123,7 @@ var applinks = exports.applinks = function applinks(app_store_id, name, android_
     // Android
     'al:android:url,applinks://docs', 'al:android:app_name,' + name, 'al:android:package,' + android_pkg,
     // Web Fallback
-    'al:web:url,' + docs_url].
-    // More info: http://applinks.org/documentation/
-    map(function (x, i, a) {
+    'al:web:url,' + docs_url].map(function (x, i, a) {
         var n = arguments.length <= 3 || arguments[3] === undefined ? x.split(',') : arguments[3];
         return (0, _vdom2.m)('meta', { property: n[0], content: n[1] });
     });

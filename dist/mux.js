@@ -88,7 +88,7 @@ var muxer = exports.muxer = function muxer(batch_url) {
 
     var get = function get(url) {
         var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-        return(
+        return (
             // add {url,options} to payload
             // resolves to data[index] under assumption the endpoint returns
             // data in order it was requested
