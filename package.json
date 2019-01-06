@@ -23,7 +23,7 @@
     ]
   },
   "optionalDependencies": {
-    "universal-utils-vdom-components": "0.x",
+    "universal-utils-vdom-components": "^0.0.11",
     "redis": "2.x"
   },
   "dependencies": {
