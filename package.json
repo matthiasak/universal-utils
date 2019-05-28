@@ -41,6 +41,6 @@
     "babel-preset-stage-0": "6.x",
     "esdoc": "0.x",
     "esdoc-es7-plugin": "0.x",
-    "surge": "0.x"
+    "surge": "^0.21.0"
   }
 }
